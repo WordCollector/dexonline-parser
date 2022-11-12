@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.163.0/",
+		"cheerio": "https://esm.sh/cheerio@1.0.0-rc.12/"
+  }
+}
