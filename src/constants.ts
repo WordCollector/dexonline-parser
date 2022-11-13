@@ -9,12 +9,25 @@ namespace Selectors {
 	export const contentTabs = {
 		synthesis: {
 			header: {
-        element: 'h3[class=tree-heading] > div',
-        type: 'span[class=tree-pos-info]',
-      },
+				element: 'h3[class=tree-heading] > div',
+				type: 'span[class=tree-pos-info]',
+			},
 			body: {
-        element: 'div[class=tree-body]',
-      },
+				element: 'div[class=tree-body]',
+				row: {
+					element: 'div[class=meaningContainer]',
+					contents: {
+						element: 'div[class=meaning-row]',
+						tags: 'span[class="tag-group meaning-tags"]',
+						text: 'span[class="def html"]',
+						sources: 'span[class="meaning-sources tag-group"]',
+					},
+				},
+				etymology: {
+					element: 'div[class=etymology]',
+					tree: 'ul[class=meaningTree]',
+				},
+			},
 		},
 	};
 }
