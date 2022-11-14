@@ -31,7 +31,7 @@ function valueToEnum<
 	EnumValue = EnumType extends Record<string, infer V> ? V : never,
 >(enumerator: EnumType, value: EnumValue): EnumValue | undefined {
 	return (Object.values(enumerator) as unknown as Array<EnumValue>).includes(value)
-		? value as unknown as EnumType
+		? value as unknown as EnumValue
 		: undefined;
 }
 
