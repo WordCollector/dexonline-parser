@@ -7,7 +7,7 @@ FEATURES:
     - Lemma
     - Type
   - Body:
+    - Examples
     - Definitions
       - Relations
-      - Subdefinitions
     - Etymology

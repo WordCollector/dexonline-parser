@@ -27,6 +27,7 @@ namespace Dexonline {
 		}
 
 		interface Tree {
+			examples: Array<Example>;
 			definitions: Array<Definition>;
 		}
 
@@ -70,10 +71,32 @@ namespace Dexonline {
 			}
 		}
 
+		enum RelationTypes {
+			Synonym = 'synonyms',
+			Antonym = 'antonyms',
+			Diminutive = 'diminutives',
+			Augmentative = 'augmentatives',
+		}
+
+		const relationTypeNameToRelationType: Record<string, RelationTypes> = {
+			'sinonime': RelationTypes.Synonym,
+			'antonime': RelationTypes.Antonym,
+			'diminutive': RelationTypes.Diminutive,
+			'augmentative': RelationTypes.Augmentative,
+		};
+
+		type Relations = Record<
+			typeof RelationTypes[keyof typeof RelationTypes],
+			Array<string>
+		>;
+
 		interface Definition extends Row.Row {
 			definitions: Array<Definition>;
+			examples: Array<Example>;
 			relations: Relations;
 		}
+
+		interface Example extends Row.Row {}
 		interface Etymology extends Row.Row {}
 
 		export function parse($: CheerioAPI): Array<Lemma> {
@@ -108,14 +131,15 @@ namespace Dexonline {
 		}
 
 		export function parseBody($: CheerioAPI, body: Cheerio<Element>): Body {
-			const { definitions } = getTree($, body);
+			const { examples, definitions } = getTree($, body);
 			const etymology = getEtymology($, body);
 
-			return { definitions, etymology };
+			return { examples, definitions, etymology };
 		}
 
 		enum TreeTypes {
 			Definition = 'meaning',
+			Example = 'example',
 		}
 
 		export function getTree($: CheerioAPI, body: Cheerio<Element>): Tree {
@@ -123,7 +147,7 @@ namespace Dexonline {
 			const subtrees = section.children().toArray();
 
 			if (subtrees.length === 0) {
-				return { definitions: [] };
+				return { examples: [], definitions: [] };
 			}
 
 			const subtreesSorted = subtrees.reduce<Record<keyof Tree, Array<Element>>>(
@@ -140,6 +164,10 @@ namespace Dexonline {
 					if (!type) return subtrees;
 
 					switch (type) {
+						case TreeTypes.Example: {
+							subtrees.examples.push(subtree);
+							break;
+						}
 						case TreeTypes.Definition: {
 							subtrees.definitions.push(subtree);
 							break;
@@ -148,52 +176,39 @@ namespace Dexonline {
 
 					return subtrees;
 				},
-				{ definitions: [] },
+				{ examples: [], definitions: [] },
 			);
 
 			return {
+				examples: subtreesSorted.examples.map((example) => getBranch($, $(example), TreeTypes.Example)),
 				definitions: subtreesSorted.definitions.map((definition) => getBranch($, $(definition), TreeTypes.Definition)),
 			};
 		}
 
-		function getBranch<T extends TreeTypes, R extends Row.Row = T extends TreeTypes.Definition ? Definition : never>(
+		function getBranch<T extends TreeTypes, R extends Row.Row>(
 			$: CheerioAPI,
 			branch: Cheerio<Element>,
 			type: T,
 		): R {
 			const root = $(branch.children(Selectors.contentTabs.synthesis.body.row.element));
 			const row = Row.parse($, root);
-			const { definitions } = getTree($, branch);
 
 			let result: unknown;
 			switch (type) {
+				case TreeTypes.Example: {
+					result = { ...row };
+					break;
+				}
 				case TreeTypes.Definition: {
+					const { examples, definitions } = getTree($, branch);
 					const relations = getRelations($, root);
-					result = { ...row, definitions, relations };
+					result = { ...row, examples, definitions, relations };
+					break;
 				}
 			}
 
 			return result as R;
 		}
-
-		enum RelationTypes {
-			Synonym = 'synonyms',
-			Antonym = 'antonyms',
-			Diminutive = 'diminutives',
-			Augmentative = 'augmentatives',
-		}
-
-		const relationTypeNameToRelationType: Record<string, RelationTypes> = {
-			'sinonime': RelationTypes.Synonym,
-			'antonime': RelationTypes.Antonym,
-			'diminutive': RelationTypes.Diminutive,
-			'augmentative': RelationTypes.Augmentative,
-		};
-
-		type Relations = Record<
-			typeof RelationTypes[keyof typeof RelationTypes],
-			Array<string>
-		>;
 
 		function getRelations($: CheerioAPI, row: Cheerio<Element>): Relations {
 			const section = row.children(Selectors.contentTabs.synthesis.body.row.relations.element);

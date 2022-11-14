@@ -11,17 +11,36 @@ Deno.test('parser', async (test) => {
 		assertEquals(first, {
 			type: 'adverb',
 			lemma: 'da',
+			examples: [],
 			definitions: [
 				{
 					tags: [],
 					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
 					value:
 						'Cuvânt care se folosește pentru a răspunde afirmativ la o întrebare sau pentru a exprima o afirmație, un consimțământ.',
+					examples: [{
+						tags: [],
+						sources: ['DLRLC'],
+						value: 'Toți sunt aici? – Da.',
+					}, {
+						tags: [],
+						sources: ['DLRLC'],
+						value: 'Mai mult Passa vorbea. Domițian se mulțumea să zică da sau nu. BASSARABESCU, V. 18.',
+					}, {
+						tags: [],
+						sources: ['DLRLC'],
+						value: 'Ai înțeles ce ți-am spus? – Da, mămucă. CREANGĂ, P. 6.',
+					}],
 					definitions: [{
 						tags: [],
 						sources: ['MDA2'],
 						value:
 							'(În dialog; adesea cu repetarea propoziției sau a unei părți din propoziție) Exprimă o afirmație întărită.',
+						examples: [{
+							tags: [],
+							sources: ['MDA2'],
+							value: 'Așa este? – Da, așa este.',
+						}],
 						definitions: [],
 						relations: {
 							synonyms: [],
@@ -33,6 +52,7 @@ Deno.test('parser', async (test) => {
 						tags: [],
 						sources: ['MDA2'],
 						value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
+						examples: [],
 						definitions: [],
 						relations: {
 							synonyms: [],
@@ -44,6 +64,7 @@ Deno.test('parser', async (test) => {
 						tags: [],
 						sources: ['NODEX'],
 						value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
+						examples: [],
 						definitions: [],
 						relations: {
 							synonyms: ['exact', 'întocmai'],
@@ -55,6 +76,11 @@ Deno.test('parser', async (test) => {
 						tags: [],
 						sources: ['NODEX'],
 						value: '(Cu sens interogativ se folosește pentru a căpăta răspuns la o alternativă) Așa sau altfel?',
+						examples: [{
+							tags: [],
+							sources: ['NODEX'],
+							value: 'Da ori ba?',
+						}],
 						definitions: [],
 						relations: {
 							synonyms: [],
@@ -67,6 +93,11 @@ Deno.test('parser', async (test) => {
 						sources: ['NODEX'],
 						value:
 							'(La începutul unei propoziții semnalează că vorbitorul și-a amintit de ceva) Fiindcă a venit vorba.',
+						examples: [{
+							tags: [],
+							sources: ['NODEX'],
+							value: 'Da, era să uit.',
+						}],
 						definitions: [],
 						relations: {
 							synonyms: ['apropo'],
@@ -78,6 +109,7 @@ Deno.test('parser', async (test) => {
 						tags: [],
 						sources: ['NODEX'],
 						value: 'Întru totul.',
+						examples: [],
 						definitions: [],
 						relations: {
 							synonyms: ['exact', 'întocmai'],
@@ -89,10 +121,12 @@ Deno.test('parser', async (test) => {
 						tags: ['(și) substantivat', 'neutru'],
 						sources: ['MDA2'],
 						value: 'Răspuns afirmativ.',
+						examples: [],
 						definitions: [{
 							tags: ['prin extensiune'],
 							sources: ['MDA2'],
 							value: 'Afirmație.',
+							examples: [],
 							definitions: [],
 							relations: {
 								synonyms: ['afirmație'],
@@ -127,12 +161,13 @@ Deno.test('parser', async (test) => {
 			}],
 		});
 
-		const entriesWithoutDefinitions = entries.map((entry) => ({ ...entry, definitions: [] }));
+		const entriesWithoutDefinitions = entries.map((entry) => ({ ...entry, examples: [], definitions: [] }));
 
 		assertEquals(entriesWithoutDefinitions, [
 			{
 				type: 'verb',
 				lemma: 'da',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['limba latină'],
@@ -143,6 +178,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'adverb',
 				lemma: 'dar',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['necunoscută'],
@@ -153,6 +189,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'conjuncție',
 				lemma: 'dar',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['necunoscută'],
@@ -163,6 +200,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'adverb',
 				lemma: 'darn',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['limba italiană'],
@@ -173,6 +211,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'prefix',
 				lemma: 'deca',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['limba neogreacă'],
@@ -183,6 +222,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'interjecție',
 				lemma: 'de / dec / deh',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['onomatopee'],
@@ -193,6 +233,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'prepoziție',
 				lemma: 'de',
+				examples: [],
 				definitions: [],
 				etymology: [{
 					tags: ['limba latină'],
@@ -210,14 +251,25 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'substantiv feminin',
 				lemma: 'întregime',
+				examples: [],
 				definitions: [{
 					tags: [],
 					sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
 					value: 'Calitatea de a fi întreg.',
+					examples: [{
+						tags: [],
+						value: 'Să nu mai puteți coprinde cu gîndul întregimea scopului ce-mi propun. ODOBESCU, S. II 234.',
+						sources: ['DLRLC'],
+					}],
 					definitions: [{
 						tags: ['concretizat'],
 						sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
 						value: 'Ansamblul elementelor care constituie un tot.',
+						examples: [{
+							tags: [],
+							value: 'Un copaci bătrîn căzuse... se așternuse Cu-ntregimea-i la pămînt. PANN, P. V. II 53.',
+							sources: ['DLRLC'],
+						}],
 						definitions: [],
 						relations: {
 							synonyms: [],
