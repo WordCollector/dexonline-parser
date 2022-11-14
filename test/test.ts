@@ -1,9 +1,13 @@
 import { assertEquals, assertNotEquals } from 'std/testing/asserts.ts';
-import { Dexonline } from '../mod.ts';
+import { Dexonline, SearchModes } from '../mod.ts';
+import { Links } from '../src/mod.ts';
 
 Deno.test('parser', async (test) => {
 	await test.step('polysemantic', async () => {
-		const entries = await getEntries('da');
+		const entriesOrUndefined = await Dexonline.get('da');
+		assertNotEquals(entriesOrUndefined, undefined);
+
+		const entries = entriesOrUndefined!;
 
 		assertEquals(entries.length, 8);
 
@@ -338,7 +342,10 @@ Deno.test('parser', async (test) => {
 	});
 
 	await test.step('monosemantic', async () => {
-		const entries = await getEntries('întregime');
+		const entriesOrUndefined = await Dexonline.get('întregime');
+		assertNotEquals(entriesOrUndefined, undefined);
+
+		const entries = entriesOrUndefined!;
 
 		assertEquals(entries, [
 			{
@@ -425,16 +432,19 @@ Deno.test('parser', async (test) => {
 			},
 		]);
 	});
+
+	await test.step('configuration', async (test) => {
+		await test.step('strict/lax mode', async () => {
+			const response = await fetch(Links.definition('a'));
+			assertEquals(response.ok, true);
+
+			const body = await response.text();
+
+			const entriesStrict = Dexonline.parse(body, { mode: SearchModes.Strict, word: 'a' });
+			const entriesLax = Dexonline.parse(body, { mode: SearchModes.Lax });
+
+			assertEquals(entriesLax.every((entry) => entry.lemma === 'a'), false);
+			assertEquals(entriesStrict.every((entry) => entry.lemma === 'a'), true);
+		});
+	});
 });
-
-type NonNullablePromise<T> = Promise<NonNullable<Awaited<T>>>;
-type GetFunction = typeof Dexonline.get;
-
-const getEntries = async (
-	...args: Parameters<GetFunction>
-): NonNullablePromise<ReturnType<GetFunction>> => {
-	const entriesOrUndefined = await Dexonline.get(...args);
-	assertNotEquals(entriesOrUndefined, undefined);
-
-	return entriesOrUndefined!;
-};

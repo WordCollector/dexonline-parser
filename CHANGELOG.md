@@ -2,6 +2,10 @@
 
 FEATURES:
 
+- Options:
+  - Modes:
+    - Strict (Match identical)
+    - Lax (Match similar)
 - Parsing entries in the 'Synthesis' tab:
   - Headers:
     - Lemma

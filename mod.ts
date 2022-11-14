@@ -1,19 +1,47 @@
 import { Cheerio, CheerioAPI, Element, load } from 'cheerio';
 import { ContentTabs, Expressions, Links, Selectors, valueToEnum, zip } from './src/mod.ts';
 
+/** Specifies the strictness of word searches. */
+enum SearchModes {
+	/** Consider only lemmas that match the search term exactly. */
+	Strict,
+
+	/** Consider all lemmas similar to the search term. */
+	Lax,
+}
+
+/** Defines the available options for getting a word from the dictionary. */
+interface SearchOptions {
+	/** The {@link SearchModes | mode} to use for searching the dictionary. Default: {@link SearchModes.Lax | Lax} */
+	mode: SearchModes;
+}
+
+/** The default search options. */
+const defaultSearchOptions: SearchOptions = {
+	mode: SearchModes.Lax,
+};
+
+type SearchOptionsWithWord = SearchOptions & ({ mode: SearchModes.Lax } | { mode: SearchModes.Strict; word: string });
+
 namespace Dexonline {
-	export async function get(word: string): Promise<Array<Synthesis.Lemma> | undefined> {
+	export async function get(
+		word: string,
+		options: Partial<SearchOptions> = defaultSearchOptions,
+	): Promise<Array<Synthesis.Lemma> | undefined> {
 		const response = await fetch(Links.definition(word));
 		if (!response.ok) return undefined;
 
 		const body = await response.text();
-		return parse(body);
+		return parse(body, { ...defaultSearchOptions, word, ...options });
 	}
 
-	export function parse(body: string): Array<Synthesis.Lemma> {
+	export function parse(
+		body: string,
+		options: SearchOptionsWithWord = { ...defaultSearchOptions, word: '' },
+	): Array<Synthesis.Lemma> {
 		const $ = load(body);
 
-		const entries = Synthesis.parse($);
+		const entries = Synthesis.parse($, { ...defaultSearchOptions, ...options });
 
 		return entries;
 	}
@@ -105,7 +133,7 @@ namespace Dexonline {
 		}
 		interface Etymology extends Row.Row {}
 
-		export function parse($: CheerioAPI): Array<Lemma> {
+		export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<Lemma> {
 			const synthesis = $(Selectors.contentTab(ContentTabs.Synthesis));
 
 			const headerBodyTuples = zip(
@@ -115,14 +143,18 @@ namespace Dexonline {
 				synthesis.children(Selectors.contentTabs.synthesis.body.element).toArray(),
 			);
 
-			return headerBodyTuples.map(
+			return <Array<Lemma>> headerBodyTuples.map<Lemma | undefined>(
 				([headerElement, bodyElement]) => {
 					const header = parseHeader($(headerElement));
+					if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
+						return undefined;
+					}
+
 					const body = parseBody($, $(bodyElement));
 
 					return { ...header, ...body };
 				},
-			);
+			).filter((entryOrUndefined) => !!entryOrUndefined);
 		}
 
 		export function parseHeader(header: Cheerio<Element>): Header {
@@ -212,9 +244,9 @@ namespace Dexonline {
 			const sharedProperties = { ...row, relations: getRelations($, root) };
 			const { examples, definitions, expressions } = getTree($, branch);
 
-      if (type === TreeTypes.Expression) {
-        return { ...sharedProperties, examples, expressions } as unknown as R;
-      }
+			if (type === TreeTypes.Expression) {
+				return { ...sharedProperties, examples, expressions } as unknown as R;
+			}
 
 			return { ...sharedProperties, examples, definitions, expressions } as unknown as R;
 		}
@@ -257,4 +289,5 @@ namespace Dexonline {
 	}
 }
 
-export { Dexonline };
+export { Dexonline, SearchModes };
+export type { SearchOptions };
