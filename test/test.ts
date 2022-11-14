@@ -42,6 +42,7 @@ Deno.test('parser', async (test) => {
 							value: 'Așa este? – Da, așa este.',
 						}],
 						definitions: [],
+						expressions: [],
 						relations: {
 							synonyms: [],
 							antonyms: [],
@@ -54,6 +55,7 @@ Deno.test('parser', async (test) => {
 						value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
 						examples: [],
 						definitions: [],
+						expressions: [],
 						relations: {
 							synonyms: [],
 							antonyms: [],
@@ -66,6 +68,31 @@ Deno.test('parser', async (test) => {
 						value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
 						examples: [],
 						definitions: [],
+						expressions: [{
+							tags: [],
+							sources: ['NODEX'],
+							value: 'Vodă da, iar Hâncu ba = îi spui una, iar el îți răspunde alta.',
+							examples: [],
+							expressions: [],
+							relations: {
+								synonyms: [],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: [],
+							sources: ['MDA2'],
+							value: 'Așa da = exprimă aprobarea, acordul în legătură cu modul de desfășurare a unei acțiuni.',
+							examples: [],
+							expressions: [],
+							relations: {
+								synonyms: [],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}],
 						relations: {
 							synonyms: ['exact', 'întocmai'],
 							antonyms: [],
@@ -82,6 +109,7 @@ Deno.test('parser', async (test) => {
 							value: 'Da ori ba?',
 						}],
 						definitions: [],
+						expressions: [],
 						relations: {
 							synonyms: [],
 							antonyms: [],
@@ -99,6 +127,7 @@ Deno.test('parser', async (test) => {
 							value: 'Da, era să uit.',
 						}],
 						definitions: [],
+						expressions: [],
 						relations: {
 							synonyms: ['apropo'],
 							antonyms: [],
@@ -111,6 +140,7 @@ Deno.test('parser', async (test) => {
 						value: 'Întru totul.',
 						examples: [],
 						definitions: [],
+						expressions: [],
 						relations: {
 							synonyms: ['exact', 'întocmai'],
 							antonyms: [],
@@ -128,8 +158,63 @@ Deno.test('parser', async (test) => {
 							value: 'Afirmație.',
 							examples: [],
 							definitions: [],
+							expressions: [],
 							relations: {
 								synonyms: ['afirmație'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}],
+						expressions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
+					}],
+					expressions: [{
+						tags: ['locuțiune adverbială'],
+						sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
+						value: 'Ba da, exprimă răspunsul afirmativ la o întrebare negativă.',
+						examples: [{
+							sources: ['DLRLC'],
+							tags: [],
+							value: 'N-ai terminat? – Ba da.',
+						}],
+						expressions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
+					}, {
+						tags: [],
+						sources: ['MDA2'],
+						value: 'A zice (sau a spune) da = a face o afirmație.',
+						examples: [],
+						expressions: [{
+							sources: ['MDA2'],
+							tags: [],
+							value: 'Aproba.',
+							examples: [],
+							expressions: [],
+							relations: {
+								synonyms: ['aproba'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							sources: ['MDA2'],
+							tags: ['prin extensiune'],
+							value: 'Confirma.',
+							examples: [],
+							expressions: [],
+							relations: {
+								synonyms: ['confirma'],
 								antonyms: [],
 								diminutives: [],
 								augmentatives: [],
@@ -150,6 +235,7 @@ Deno.test('parser', async (test) => {
 					},
 				},
 			],
+			expressions: [],
 			etymology: [{
 				tags: ['limba rusă', 'limba sârbă, croată'],
 				sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
@@ -161,14 +247,15 @@ Deno.test('parser', async (test) => {
 			}],
 		});
 
-		const entriesWithoutDefinitions = entries.map((entry) => ({ ...entry, examples: [], definitions: [] }));
+		const entriesShallow = entries.map((entry) => ({ ...entry, expressions: [], examples: [], definitions: [] }));
 
-		assertEquals(entriesWithoutDefinitions, [
+		assertEquals(entriesShallow, [
 			{
 				type: 'verb',
 				lemma: 'da',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['limba latină'],
 					sources: [`DEX '09`, `DEX '98`, 'NODEX'],
@@ -180,6 +267,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'dar',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['necunoscută'],
 					sources: [`DEX '09`, `DEX '98`],
@@ -191,6 +279,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'dar',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['necunoscută'],
 					sources: [`DEX '09`, `DEX '98`],
@@ -202,6 +291,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'darn',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['limba italiană'],
 					sources: [`DEX '09`, `DEX '98`, 'DN'],
@@ -213,6 +303,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'deca',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['limba neogreacă'],
 					sources: [`DEX '09`, `DEX '98`, 'DN'],
@@ -224,6 +315,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'de / dec / deh',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['onomatopee'],
 					sources: [`DEX '09`, 'NODEX'],
@@ -235,6 +327,7 @@ Deno.test('parser', async (test) => {
 				lemma: 'de',
 				examples: [],
 				definitions: [],
+				expressions: [],
 				etymology: [{
 					tags: ['limba latină'],
 					sources: [`DEX '09`],
@@ -271,6 +364,44 @@ Deno.test('parser', async (test) => {
 							sources: ['DLRLC'],
 						}],
 						definitions: [],
+						expressions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
+					}],
+					expressions: [{
+						tags: ['locuțiune adverbială'],
+						sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
+						value: 'În întregime = de tot.',
+						examples: [{
+							tags: [],
+							sources: ['DLRLC'],
+							value: 'Cartea a fost tradusă în întregime.',
+						}, {
+							tags: [],
+							sources: ['DLRLC'],
+							value: 'Îl cercetă... din tălpi pînă-n creștet, în întregime, de la distanță. C. PETRESCU, A. R. 15.',
+						}],
+						expressions: [],
+						relations: {
+							synonyms: ['complet'],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
+					}, {
+						tags: [],
+						sources: ['DLRLC'],
+						value: 'Mai întregimea... = mai tot, aproape tot.',
+						examples: [{
+							tags: [],
+							sources: ['DLRLC'],
+							value: 'Să-i vadă cineva despărțiți de mai întregimea emigrației. GHICA, A. 726.',
+						}],
+						expressions: [],
 						relations: {
 							synonyms: [],
 							antonyms: [],
@@ -285,6 +416,7 @@ Deno.test('parser', async (test) => {
 						augmentatives: [],
 					},
 				}],
+				expressions: [],
 				etymology: [{
 					tags: [],
 					sources: [`DEX '09`, `DEX '98`],

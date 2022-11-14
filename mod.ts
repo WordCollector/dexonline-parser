@@ -29,6 +29,7 @@ namespace Dexonline {
 		interface Tree {
 			examples: Array<Example>;
 			definitions: Array<Definition>;
+			expressions: Array<Expression>;
 		}
 
 		interface Body extends Tree {
@@ -90,13 +91,18 @@ namespace Dexonline {
 			Array<string>
 		>;
 
+		interface Example extends Row.Row {}
 		interface Definition extends Row.Row {
 			definitions: Array<Definition>;
 			examples: Array<Example>;
+			expressions: Array<Expression>;
 			relations: Relations;
 		}
-
-		interface Example extends Row.Row {}
+		interface Expression extends Row.Row {
+			examples: Array<Example>;
+			expressions: Array<Expression>;
+			relations: Relations;
+		}
 		interface Etymology extends Row.Row {}
 
 		export function parse($: CheerioAPI): Array<Lemma> {
@@ -131,15 +137,16 @@ namespace Dexonline {
 		}
 
 		export function parseBody($: CheerioAPI, body: Cheerio<Element>): Body {
-			const { examples, definitions } = getTree($, body);
+			const { examples, definitions, expressions } = getTree($, body);
 			const etymology = getEtymology($, body);
 
-			return { examples, definitions, etymology };
+			return { examples, definitions, expressions, etymology };
 		}
 
 		enum TreeTypes {
-			Definition = 'meaning',
 			Example = 'example',
+			Definition = 'meaning',
+			Expression = 'expression',
 		}
 
 		export function getTree($: CheerioAPI, body: Cheerio<Element>): Tree {
@@ -147,7 +154,7 @@ namespace Dexonline {
 			const subtrees = section.children().toArray();
 
 			if (subtrees.length === 0) {
-				return { examples: [], definitions: [] };
+				return { examples: [], definitions: [], expressions: [] };
 			}
 
 			const subtreesSorted = subtrees.reduce<Record<keyof Tree, Array<Element>>>(
@@ -172,16 +179,21 @@ namespace Dexonline {
 							subtrees.definitions.push(subtree);
 							break;
 						}
+						case TreeTypes.Expression: {
+							subtrees.expressions.push(subtree);
+							break;
+						}
 					}
 
 					return subtrees;
 				},
-				{ examples: [], definitions: [] },
+				{ examples: [], definitions: [], expressions: [] },
 			);
 
 			return {
 				examples: subtreesSorted.examples.map((example) => getBranch($, $(example), TreeTypes.Example)),
 				definitions: subtreesSorted.definitions.map((definition) => getBranch($, $(definition), TreeTypes.Definition)),
+				expressions: subtreesSorted.expressions.map((expression) => getBranch($, $(expression), TreeTypes.Expression)),
 			};
 		}
 
@@ -193,21 +205,18 @@ namespace Dexonline {
 			const root = $(branch.children(Selectors.contentTabs.synthesis.body.row.element));
 			const row = Row.parse($, root);
 
-			let result: unknown;
-			switch (type) {
-				case TreeTypes.Example: {
-					result = { ...row };
-					break;
-				}
-				case TreeTypes.Definition: {
-					const { examples, definitions } = getTree($, branch);
-					const relations = getRelations($, root);
-					result = { ...row, examples, definitions, relations };
-					break;
-				}
+			if (type === TreeTypes.Example) {
+				return row as R;
 			}
 
-			return result as R;
+			const sharedProperties = { ...row, relations: getRelations($, root) };
+			const { examples, definitions, expressions } = getTree($, branch);
+
+      if (type === TreeTypes.Expression) {
+        return { ...sharedProperties, examples, expressions } as unknown as R;
+      }
+
+			return { ...sharedProperties, examples, definitions, expressions } as unknown as R;
 		}
 
 		function getRelations($: CheerioAPI, row: Cheerio<Element>): Relations {
