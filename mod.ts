@@ -52,15 +52,15 @@ namespace Dexonline {
 			}
 
 			function getContents($: CheerioAPI, row: Cheerio<Element>): Contents {
-				const contents = row.children(Selectors.contentTabs.synthesis.body.row.contents.element);
+				const section = row.children(Selectors.contentTabs.synthesis.body.row.contents.element);
 
-				const tags = contents.children(Selectors.contentTabs.synthesis.body.row.contents.tags).children().map((
+				const tags = section.children(Selectors.contentTabs.synthesis.body.row.contents.tags).children().map((
 					_index,
 					tag,
 				) => $(tag).text())
 					.toArray();
-				const text = contents.children(Selectors.contentTabs.synthesis.body.row.contents.text).text().trim();
-				const sources = contents.children(Selectors.contentTabs.synthesis.body.row.contents.sources).children().map((
+				const text = section.children(Selectors.contentTabs.synthesis.body.row.contents.text).text().trim();
+				const sources = section.children(Selectors.contentTabs.synthesis.body.row.contents.sources).children().map((
 					_index,
 					tag,
 				) => $(tag).text().trim())
@@ -72,6 +72,7 @@ namespace Dexonline {
 
 		interface Definition extends Row.Row {
 			definitions: Array<Definition>;
+			relations: Relations;
 		}
 		interface Etymology extends Row.Row {}
 
@@ -98,7 +99,6 @@ namespace Dexonline {
 		export function parseHeader(header: Cheerio<Element>): Header {
 			const typeElement = header.children(Selectors.contentTabs.synthesis.header.type);
 			const type = typeElement.text().trim().toLowerCase();
-
 			typeElement.remove();
 
 			const [singular, _plural] = <[string, string]> header.text().trim().split(', ');
@@ -161,17 +161,65 @@ namespace Dexonline {
 			branch: Cheerio<Element>,
 			type: T,
 		): R {
-			const root = Row.parse($, $(branch.children(Selectors.contentTabs.synthesis.body.row.element)));
+			const root = $(branch.children(Selectors.contentTabs.synthesis.body.row.element));
+			const row = Row.parse($, root);
 			const { definitions } = getTree($, branch);
 
 			let result: unknown;
 			switch (type) {
 				case TreeTypes.Definition: {
-					result = { ...root, definitions };
+					const relations = getRelations($, root);
+					result = { ...row, definitions, relations };
 				}
 			}
 
 			return result as R;
+		}
+
+		enum RelationTypes {
+			Synonym = 'synonyms',
+			Antonym = 'antonyms',
+			Diminutive = 'diminutives',
+			Augmentative = 'augmentatives',
+		}
+
+		const relationTypeNameToRelationType: Record<string, RelationTypes> = {
+			'sinonime': RelationTypes.Synonym,
+			'antonime': RelationTypes.Antonym,
+			'diminutive': RelationTypes.Diminutive,
+			'augmentative': RelationTypes.Augmentative,
+		};
+
+		type Relations = Record<
+			typeof RelationTypes[keyof typeof RelationTypes],
+			Array<string>
+		>;
+
+		function getRelations($: CheerioAPI, row: Cheerio<Element>): Relations {
+			const section = row.children(Selectors.contentTabs.synthesis.body.row.relations.element);
+			const groups = section.children().toArray();
+
+			return groups.reduce<Relations>(
+				(relations, group) => {
+					if (!group.firstChild) return relations;
+
+					const typeElement = $(group).children().first().remove();
+					const typeString = typeElement.text().trim().toLowerCase().replace(':', '');
+
+					const type = relationTypeNameToRelationType[typeString];
+					if (!type) return relations;
+
+					const terms = $(group).children().toArray()
+						.map((node) => $(node).text())
+						.map((term) => term.trim())
+						.filter((term) => term.length !== 0);
+
+					relations[type!].push(...terms);
+
+					return relations;
+				},
+				{ synonyms: [], antonyms: [], diminutives: [], augmentatives: [] },
+			);
 		}
 
 		function getEtymology($: CheerioAPI, body: Cheerio<Element>): Array<Etymology> {

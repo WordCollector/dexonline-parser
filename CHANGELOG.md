@@ -8,5 +8,6 @@ FEATURES:
     - Type
   - Body:
     - Definitions
+      - Relations
       - Subdefinitions
     - Etymology

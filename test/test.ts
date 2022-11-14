@@ -23,32 +23,68 @@ Deno.test('parser', async (test) => {
 						value:
 							'(În dialog; adesea cu repetarea propoziției sau a unei părți din propoziție) Exprimă o afirmație întărită.',
 						definitions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: [],
 						sources: ['MDA2'],
 						value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
 						definitions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: [],
 						sources: ['NODEX'],
 						value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
 						definitions: [],
+						relations: {
+							synonyms: ['exact', 'întocmai'],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: [],
 						sources: ['NODEX'],
 						value: '(Cu sens interogativ se folosește pentru a căpăta răspuns la o alternativă) Așa sau altfel?',
 						definitions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: [],
 						sources: ['NODEX'],
 						value:
 							'(La începutul unei propoziții semnalează că vorbitorul și-a amintit de ceva) Fiindcă a venit vorba.',
 						definitions: [],
+						relations: {
+							synonyms: ['apropo'],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: [],
 						sources: ['NODEX'],
 						value: 'Întru totul.',
 						definitions: [],
+						relations: {
+							synonyms: ['exact', 'întocmai'],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}, {
 						tags: ['(și) substantivat', 'neutru'],
 						sources: ['MDA2'],
@@ -58,8 +94,26 @@ Deno.test('parser', async (test) => {
 							sources: ['MDA2'],
 							value: 'Afirmație.',
 							definitions: [],
+							relations: {
+								synonyms: ['afirmație'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
 						}],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}],
+					relations: {
+						synonyms: [],
+						antonyms: ['nu'],
+						diminutives: [],
+						augmentatives: [],
+					},
 				},
 			],
 			etymology: [{
@@ -165,7 +219,19 @@ Deno.test('parser', async (test) => {
 						sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
 						value: 'Ansamblul elementelor care constituie un tot.',
 						definitions: [],
+						relations: {
+							synonyms: [],
+							antonyms: [],
+							diminutives: [],
+							augmentatives: [],
+						},
 					}],
+					relations: {
+						synonyms: ['deplinătate', 'integritate', 'plenitudine', 'totalitate'],
+						antonyms: [],
+						diminutives: [],
+						augmentatives: [],
+					},
 				}],
 				etymology: [{
 					tags: [],

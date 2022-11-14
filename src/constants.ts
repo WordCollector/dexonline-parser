@@ -6,6 +6,7 @@ namespace Links {
 
 namespace Expressions {
 	export const treeType = /^type-(\w+)$/;
+	export const relationType = /^me-(\d+)$/;
 }
 
 namespace Selectors {
@@ -26,6 +27,9 @@ namespace Selectors {
 						tags: 'span[class="tag-group meaning-tags"]',
 						text: 'span[class="def html"]',
 						sources: 'span[class="meaning-sources tag-group"]',
+					},
+					relations: {
+						element: 'div[class=meaning-relations]',
 					},
 				},
 				tree: {
