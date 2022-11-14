@@ -5,23 +5,81 @@ Deno.test('parser', async (test) => {
 	await test.step('polysemantic', async () => {
 		const entries = await getEntries('da');
 
-		assertEquals(entries, [
-			{
-				type: 'adverb',
-				lemma: 'da',
-				etymology: [{
-					tags: ['limba rusă', 'limba sârbă, croată'],
-					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
-					value: 'da',
-				}, {
-					tags: ['limba bulgară', 'limba slavă (veche)'],
-					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
-					value: 'da, да',
-				}],
-			},
+		assertEquals(entries.length, 8);
+
+		const first = entries.shift()!;
+		assertEquals(first, {
+			type: 'adverb',
+			lemma: 'da',
+			definitions: [
+				{
+					tags: [],
+					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
+					value:
+						'Cuvânt care se folosește pentru a răspunde afirmativ la o întrebare sau pentru a exprima o afirmație, un consimțământ.',
+					definitions: [{
+						tags: [],
+						sources: ['MDA2'],
+						value:
+							'(În dialog; adesea cu repetarea propoziției sau a unei părți din propoziție) Exprimă o afirmație întărită.',
+						definitions: [],
+					}, {
+						tags: [],
+						sources: ['MDA2'],
+						value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
+						definitions: [],
+					}, {
+						tags: [],
+						sources: ['NODEX'],
+						value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
+						definitions: [],
+					}, {
+						tags: [],
+						sources: ['NODEX'],
+						value: '(Cu sens interogativ se folosește pentru a căpăta răspuns la o alternativă) Așa sau altfel?',
+						definitions: [],
+					}, {
+						tags: [],
+						sources: ['NODEX'],
+						value:
+							'(La începutul unei propoziții semnalează că vorbitorul și-a amintit de ceva) Fiindcă a venit vorba.',
+						definitions: [],
+					}, {
+						tags: [],
+						sources: ['NODEX'],
+						value: 'Întru totul.',
+						definitions: [],
+					}, {
+						tags: ['(și) substantivat', 'neutru'],
+						sources: ['MDA2'],
+						value: 'Răspuns afirmativ.',
+						definitions: [{
+							tags: ['prin extensiune'],
+							sources: ['MDA2'],
+							value: 'Afirmație.',
+							definitions: [],
+						}],
+					}],
+				},
+			],
+			etymology: [{
+				tags: ['limba rusă', 'limba sârbă, croată'],
+				sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
+				value: 'da',
+			}, {
+				tags: ['limba bulgară', 'limba slavă (veche)'],
+				sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
+				value: 'da, да',
+			}],
+		});
+
+		const entriesWithoutDefinitions = entries.map((entry) => ({ ...entry, definitions: [] }));
+
+		assertEquals(entriesWithoutDefinitions, [
 			{
 				type: 'verb',
 				lemma: 'da',
+				definitions: [],
 				etymology: [{
 					tags: ['limba latină'],
 					sources: [`DEX '09`, `DEX '98`, 'NODEX'],
@@ -31,6 +89,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'adverb',
 				lemma: 'dar',
+				definitions: [],
 				etymology: [{
 					tags: ['necunoscută'],
 					sources: [`DEX '09`, `DEX '98`],
@@ -40,6 +99,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'conjuncție',
 				lemma: 'dar',
+				definitions: [],
 				etymology: [{
 					tags: ['necunoscută'],
 					sources: [`DEX '09`, `DEX '98`],
@@ -49,6 +109,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'adverb',
 				lemma: 'darn',
+				definitions: [],
 				etymology: [{
 					tags: ['limba italiană'],
 					sources: [`DEX '09`, `DEX '98`, 'DN'],
@@ -58,6 +119,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'prefix',
 				lemma: 'deca',
+				definitions: [],
 				etymology: [{
 					tags: ['limba neogreacă'],
 					sources: [`DEX '09`, `DEX '98`, 'DN'],
@@ -67,6 +129,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'interjecție',
 				lemma: 'de / dec / deh',
+				definitions: [],
 				etymology: [{
 					tags: ['onomatopee'],
 					sources: [`DEX '09`, 'NODEX'],
@@ -76,6 +139,7 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'prepoziție',
 				lemma: 'de',
+				definitions: [],
 				etymology: [{
 					tags: ['limba latină'],
 					sources: [`DEX '09`],
@@ -92,6 +156,17 @@ Deno.test('parser', async (test) => {
 			{
 				type: 'substantiv feminin',
 				lemma: 'întregime',
+				definitions: [{
+					tags: [],
+					sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
+					value: 'Calitatea de a fi întreg.',
+					definitions: [{
+						tags: ['concretizat'],
+						sources: [`DEX '09`, `DEX '98`, 'DLRLC'],
+						value: 'Ansamblul elementelor care constituie un tot.',
+						definitions: [],
+					}],
+				}],
 				etymology: [{
 					tags: [],
 					sources: [`DEX '09`, `DEX '98`],

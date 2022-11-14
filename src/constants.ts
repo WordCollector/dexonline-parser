@@ -4,12 +4,17 @@ namespace Links {
 	export const definition = (word: string) => `https://dexonline.ro/definitie/${word}`;
 }
 
+namespace Expressions {
+	export const treeType = /^type-(\w+)$/;
+}
+
 namespace Selectors {
 	export const contentTab = (tab: ContentTabs) => `#tab_${tab}`;
 	export const contentTabs = {
 		synthesis: {
 			header: {
-				element: 'h3[class=tree-heading] > div',
+				element: 'h3[class=tree-heading]',
+				container: 'div',
 				type: 'span[class=tree-pos-info]',
 			},
 			body: {
@@ -23,6 +28,9 @@ namespace Selectors {
 						sources: 'span[class="meaning-sources tag-group"]',
 					},
 				},
+				tree: {
+					element: 'ul[class=meaningTree]',
+				},
 				etymology: {
 					element: 'div[class=etymology]',
 					tree: 'ul[class=meaningTree]',
@@ -32,4 +40,4 @@ namespace Selectors {
 	};
 }
 
-export { Links, Selectors };
+export { Expressions, Links, Selectors };

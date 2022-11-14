@@ -6,3 +6,7 @@ FEATURES:
   - Headers:
     - Lemma
     - Type
+  - Body:
+    - Definitions
+      - Subdefinitions
+    - Etymology
