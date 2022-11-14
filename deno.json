@@ -24,8 +24,8 @@
 	},
 	"lint": {
 		"files": {
-			"include": ["src/"],
-			"exclude": ["./"]
+			"include": [],
+			"exclude": ["npm/"]
 		},
 		"rules": {
 			"include": [
@@ -65,7 +65,6 @@
 				"no-empty",
 				"no-empty-character-class",
 				"no-empty-enum",
-				"no-empty-interface",
 				"no-empty-pattern",
 				"no-eval",
 				"no-ex-assign",
@@ -83,7 +82,6 @@
 				"no-invalid-triple-slash-reference",
 				"no-irregular-whitespace",
 				"no-misused-new",
-				"no-namespace",
 				"no-new-symbol",
 				"no-non-null-asserted-optional-chain",
 				"no-obj-calls",
@@ -115,7 +113,11 @@
 				"triple-slash-reference",
 				"use-isnan",
 				"valid-typeof"
-			]
+			],
+      "exclude": [
+        "no-namespace",
+        "no-empty-interface"
+      ]
 		}
 	},
 	"fmt": {

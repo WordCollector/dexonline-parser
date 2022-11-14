@@ -1,7 +1,7 @@
 import { build, emptyDir } from 'https://deno.land/x/dnt@0.31.0/mod.ts';
 
 if (!Deno.args[0]) {
-	throw 'Missing version string (first argument).';
+	throw new Error('Missing version string (first argument).');
 }
 
 const outputDirectory = './npm';
