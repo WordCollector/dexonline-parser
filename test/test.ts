@@ -3,6 +3,19 @@ import { Dexonline, SearchModes } from '../mod.ts';
 import { Links } from '../src/mod.ts';
 
 Deno.test('parser', async (test) => {
+	await test.step('inexistent term', async () => {
+		const entriesOrUndefined = await Dexonline.get('dexonline');
+		assertEquals(entriesOrUndefined, undefined);
+	});
+
+	await test.step('term without synthesis', async () => {
+		const entriesOrUndefined = await Dexonline.get('ade');
+		assertNotEquals(entriesOrUndefined, undefined);
+
+		const entries = entriesOrUndefined!;
+		assertEquals(entries.length, 0);
+	});
+
 	await test.step('polysemantic', async () => {
 		const entriesOrUndefined = await Dexonline.get('da');
 		assertNotEquals(entriesOrUndefined, undefined);
@@ -436,6 +449,10 @@ Deno.test('parser', async (test) => {
 	await test.step('configuration', async (test) => {
 		await test.step('strict/lax mode', async () => {
 			const response = await fetch(Links.definition('a'));
+			if (!response.ok) {
+				await response.body?.cancel();
+			}
+
 			assertEquals(response.ok, true);
 
 			const body = await response.text();

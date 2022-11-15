@@ -14,16 +14,7 @@ await build({
 	outDir: outputDirectory,
 	shims: {
 		deno: true,
-		custom: [{
-			package: {
-				name: 'node-fetch',
-				version: '~3',
-			},
-			globalNames: [{
-				name: 'fetch',
-				exportName: 'default',
-			}],
-		}],
+		undici: true,
 	},
 	importMap: importsFile,
 	package: {

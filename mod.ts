@@ -29,7 +29,10 @@ namespace Dexonline {
 		options: Partial<SearchOptions> = defaultSearchOptions,
 	): Promise<Array<Synthesis.Lemma> | undefined> {
 		const response = await fetch(Links.definition(word));
-		if (!response.ok) return undefined;
+		if (!response.ok) {
+			await response.body?.cancel();
+			return undefined;
+		}
 
 		const body = await response.text();
 		return parse(body, { ...defaultSearchOptions, word, ...options });
