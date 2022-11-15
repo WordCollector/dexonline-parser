@@ -21,13 +21,20 @@ const defaultSearchOptions: SearchOptions = {
 	mode: SearchModes.Lax,
 };
 
-type SearchOptionsWithWord = SearchOptions & ({ mode: SearchModes.Lax } | { mode: SearchModes.Strict; word: string });
+type SearchOptionsWithWord<IsPartial extends boolean = false> =
+	& (IsPartial extends true ? Partial<SearchOptions> : SearchOptions)
+	& ({ mode: SearchModes.Lax } | { mode: SearchModes.Strict; word: string });
 
 namespace Dexonline {
+	interface Results {
+		synthesis: Array<Synthesis.Lemma>;
+		inflection: Array<Inflection.InflectionTable>;
+	}
+
 	export async function get(
 		word: string,
 		options: Partial<SearchOptions> = defaultSearchOptions,
-	): Promise<Array<Synthesis.Lemma> | undefined> {
+	): Promise<Results | undefined> {
 		const response = await fetch(Links.definition(word));
 		if (!response.ok) {
 			await response.body?.cancel();
@@ -40,13 +47,16 @@ namespace Dexonline {
 
 	export function parse(
 		body: string,
-		options: SearchOptionsWithWord = { ...defaultSearchOptions, word: '' },
-	): Array<Synthesis.Lemma> {
+		options: SearchOptionsWithWord<true> = { ...defaultSearchOptions, word: '' },
+	): Results {
 		const $ = load(body);
 
-		const entries = Synthesis.parse($, { ...defaultSearchOptions, ...options });
+		const optionsFilled: SearchOptionsWithWord<false> = { ...defaultSearchOptions, ...options };
 
-		return entries;
+		const synthesis = Synthesis.parse($, optionsFilled);
+		const inflection = Inflection.parse($, optionsFilled);
+
+		return { synthesis, inflection };
 	}
 
 	namespace Synthesis {
@@ -146,18 +156,20 @@ namespace Dexonline {
 				synthesis.children(Selectors.contentTabs.synthesis.body.element).toArray(),
 			);
 
-			return <Array<Lemma>> headerBodyTuples.map<Lemma | undefined>(
-				([headerElement, bodyElement]) => {
-					const header = parseHeader($(headerElement));
-					if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
-						return undefined;
-					}
+			return <Array<Lemma>> headerBodyTuples
+				.map<Lemma | undefined>(
+					([headerElement, bodyElement]) => {
+						const header = parseHeader($(headerElement));
+						if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
+							return undefined;
+						}
 
-					const body = parseBody($, $(bodyElement));
+						const body = parseBody($, $(bodyElement));
 
-					return { ...header, ...body };
-				},
-			).filter((entryOrUndefined) => !!entryOrUndefined);
+						return { ...header, ...body };
+					},
+				)
+				.filter((entryOrUndefined) => !!entryOrUndefined);
 		}
 
 		export function parseHeader(header: Cheerio<Element>): Header {
@@ -288,6 +300,50 @@ namespace Dexonline {
 			const rows = entries.children(Selectors.contentTabs.synthesis.body.row.element);
 
 			return rows.map((_index, row) => Row.parse($, $(row))).toArray();
+		}
+	}
+
+	namespace Inflection {
+		export interface InflectionTable extends Header {}
+
+		interface Header {
+			tags: Array<string>;
+			index: number;
+			lemma: string;
+		}
+
+		export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<InflectionTable> {
+			const inflection = $(Selectors.contentTab(ContentTabs.Inflection));
+
+			const entries = inflection.find(Selectors.contentTabs.inflection.entry.element).toArray();
+
+			return <Array<InflectionTable>> entries
+				.map<InflectionTable | undefined>((element) => {
+					const table = $(element).children(Selectors.contentTabs.inflection.entry.table.element).first();
+
+					const header = parseHeader($, table);
+					if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
+						return undefined;
+					}
+
+					return { ...header };
+				})
+				.filter((entryOrUndefined) => !!entryOrUndefined);
+		}
+
+		function parseHeader($: CheerioAPI, header: Cheerio<Element>): Header {
+			const section = header.children(Selectors.contentTabs.inflection.entry.table.header.element);
+
+			const lemmaString = section.children(Selectors.contentTabs.inflection.entry.table.header.lemma).html()!;
+			const [_match, lemma, _superscriptHtml, indexString] = Expressions.tableLemmaWithIndex.exec(lemmaString)!;
+			const index = indexString ? Number(indexString) - 1 : 0;
+
+			const tags = section.children(Selectors.contentTabs.inflection.entry.table.header.tag)
+				.children()
+				.map((_index, tag) => $(tag).text())
+				.toArray();
+
+			return { tags, lemma: lemma!, index };
 		}
 	}
 }

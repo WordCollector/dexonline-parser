@@ -4,92 +4,64 @@ import { Links } from '../src/mod.ts';
 
 Deno.test('parser', async (test) => {
 	await test.step('inexistent term', async () => {
-		const entriesOrUndefined = await Dexonline.get('dexonline');
-		assertEquals(entriesOrUndefined, undefined);
+		const resultsOrUndefined = await Dexonline.get('dexonline');
+		assertEquals(resultsOrUndefined, undefined);
 	});
 
 	await test.step('term without synthesis', async () => {
-		const entriesOrUndefined = await Dexonline.get('ade');
-		assertNotEquals(entriesOrUndefined, undefined);
+		const resultsOrUndefined = await Dexonline.get('ade');
+		assertNotEquals(resultsOrUndefined, undefined);
 
-		const entries = entriesOrUndefined!;
-		assertEquals(entries.length, 0);
+		const results = resultsOrUndefined!;
+		assertEquals(results.synthesis.length, 0);
+		assertEquals(results.inflection.length, 1);
 	});
 
-	await test.step('polysemantic', async () => {
-		const entriesOrUndefined = await Dexonline.get('da');
-		assertNotEquals(entriesOrUndefined, undefined);
+	await test.step('polysemantic', async (test) => {
+		const resultsOrUndefined = await Dexonline.get('da');
+		assertNotEquals(resultsOrUndefined, undefined);
 
-		const entries = entriesOrUndefined!;
+		const results = resultsOrUndefined!;
 
-		assertEquals(entries.length, 8);
+		await test.step('synthesis', () => {
+			assertEquals(results.synthesis.length, 8);
 
-		const first = entries.shift()!;
-		assertEquals(first, {
-			type: 'adverb',
-			lemma: 'da',
-			examples: [],
-			definitions: [
-				{
-					tags: [],
-					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
-					value:
-						'Cuvânt care se folosește pentru a răspunde afirmativ la o întrebare sau pentru a exprima o afirmație, un consimțământ.',
-					examples: [{
+			const first = results.synthesis.shift()!;
+
+			assertEquals(first, {
+				type: 'adverb',
+				lemma: 'da',
+				examples: [],
+				definitions: [
+					{
 						tags: [],
-						sources: ['DLRLC'],
-						value: 'Toți sunt aici? – Da.',
-					}, {
-						tags: [],
-						sources: ['DLRLC'],
-						value: 'Mai mult Passa vorbea. Domițian se mulțumea să zică da sau nu. BASSARABESCU, V. 18.',
-					}, {
-						tags: [],
-						sources: ['DLRLC'],
-						value: 'Ai înțeles ce ți-am spus? – Da, mămucă. CREANGĂ, P. 6.',
-					}],
-					definitions: [{
-						tags: [],
-						sources: ['MDA2'],
+						sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
 						value:
-							'(În dialog; adesea cu repetarea propoziției sau a unei părți din propoziție) Exprimă o afirmație întărită.',
+							'Cuvânt care se folosește pentru a răspunde afirmativ la o întrebare sau pentru a exprima o afirmație, un consimțământ.',
 						examples: [{
 							tags: [],
-							sources: ['MDA2'],
-							value: 'Așa este? – Da, așa este.',
-						}],
-						definitions: [],
-						expressions: [],
-						relations: {
-							synonyms: [],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['MDA2'],
-						value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
-						examples: [],
-						definitions: [],
-						expressions: [],
-						relations: {
-							synonyms: [],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['NODEX'],
-						value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
-						examples: [],
-						definitions: [],
-						expressions: [{
+							sources: ['DLRLC'],
+							value: 'Toți sunt aici? – Da.',
+						}, {
 							tags: [],
-							sources: ['NODEX'],
-							value: 'Vodă da, iar Hâncu ba = îi spui una, iar el îți răspunde alta.',
-							examples: [],
+							sources: ['DLRLC'],
+							value: 'Mai mult Passa vorbea. Domițian se mulțumea să zică da sau nu. BASSARABESCU, V. 18.',
+						}, {
+							tags: [],
+							sources: ['DLRLC'],
+							value: 'Ai înțeles ce ți-am spus? – Da, mămucă. CREANGĂ, P. 6.',
+						}],
+						definitions: [{
+							tags: [],
+							sources: ['MDA2'],
+							value:
+								'(În dialog; adesea cu repetarea propoziției sau a unei părți din propoziție) Exprimă o afirmație întărită.',
+							examples: [{
+								tags: [],
+								sources: ['MDA2'],
+								value: 'Așa este? – Da, așa este.',
+							}],
+							definitions: [],
 							expressions: [],
 							relations: {
 								synonyms: [],
@@ -100,138 +72,176 @@ Deno.test('parser', async (test) => {
 						}, {
 							tags: [],
 							sources: ['MDA2'],
-							value: 'Așa da = exprimă aprobarea, acordul în legătură cu modul de desfășurare a unei acțiuni.',
-							examples: [],
-							expressions: [],
-							relations: {
-								synonyms: [],
-								antonyms: [],
-								diminutives: [],
-								augmentatives: [],
-							},
-						}],
-						relations: {
-							synonyms: ['exact', 'întocmai'],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['NODEX'],
-						value: '(Cu sens interogativ se folosește pentru a căpăta răspuns la o alternativă) Așa sau altfel?',
-						examples: [{
-							tags: [],
-							sources: ['NODEX'],
-							value: 'Da ori ba?',
-						}],
-						definitions: [],
-						expressions: [],
-						relations: {
-							synonyms: [],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['NODEX'],
-						value:
-							'(La începutul unei propoziții semnalează că vorbitorul și-a amintit de ceva) Fiindcă a venit vorba.',
-						examples: [{
-							tags: [],
-							sources: ['NODEX'],
-							value: 'Da, era să uit.',
-						}],
-						definitions: [],
-						expressions: [],
-						relations: {
-							synonyms: ['apropo'],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['NODEX'],
-						value: 'Întru totul.',
-						examples: [],
-						definitions: [],
-						expressions: [],
-						relations: {
-							synonyms: ['exact', 'întocmai'],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: ['(și) substantivat', 'neutru'],
-						sources: ['MDA2'],
-						value: 'Răspuns afirmativ.',
-						examples: [],
-						definitions: [{
-							tags: ['prin extensiune'],
-							sources: ['MDA2'],
-							value: 'Afirmație.',
+							value: 'Reia predicatul unei propoziții negative în propoziția pozitivă care urmează.',
 							examples: [],
 							definitions: [],
 							expressions: [],
 							relations: {
-								synonyms: ['afirmație'],
-								antonyms: [],
-								diminutives: [],
-								augmentatives: [],
-							},
-						}],
-						expressions: [],
-						relations: {
-							synonyms: [],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}],
-					expressions: [{
-						tags: ['locuțiune adverbială'],
-						sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
-						value: 'Ba da, exprimă răspunsul afirmativ la o întrebare negativă.',
-						examples: [{
-							sources: ['DLRLC'],
-							tags: [],
-							value: 'N-ai terminat? – Ba da.',
-						}],
-						expressions: [],
-						relations: {
-							synonyms: [],
-							antonyms: [],
-							diminutives: [],
-							augmentatives: [],
-						},
-					}, {
-						tags: [],
-						sources: ['MDA2'],
-						value: 'A zice (sau a spune) da = a face o afirmație.',
-						examples: [],
-						expressions: [{
-							sources: ['MDA2'],
-							tags: [],
-							value: 'Aproba.',
-							examples: [],
-							expressions: [],
-							relations: {
-								synonyms: ['aproba'],
+								synonyms: [],
 								antonyms: [],
 								diminutives: [],
 								augmentatives: [],
 							},
 						}, {
-							sources: ['MDA2'],
-							tags: ['prin extensiune'],
-							value: 'Confirma.',
+							tags: [],
+							sources: ['NODEX'],
+							value: '(Atribuie celor spuse valoare afirmativă) De acord; așa este.',
 							examples: [],
+							definitions: [],
+							expressions: [{
+								tags: [],
+								sources: ['NODEX'],
+								value: 'Vodă da, iar Hâncu ba = îi spui una, iar el îți răspunde alta.',
+								examples: [],
+								expressions: [],
+								relations: {
+									synonyms: [],
+									antonyms: [],
+									diminutives: [],
+									augmentatives: [],
+								},
+							}, {
+								tags: [],
+								sources: ['MDA2'],
+								value: 'Așa da = exprimă aprobarea, acordul în legătură cu modul de desfășurare a unei acțiuni.',
+								examples: [],
+								expressions: [],
+								relations: {
+									synonyms: [],
+									antonyms: [],
+									diminutives: [],
+									augmentatives: [],
+								},
+							}],
+							relations: {
+								synonyms: ['exact', 'întocmai'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: [],
+							sources: ['NODEX'],
+							value: '(Cu sens interogativ se folosește pentru a căpăta răspuns la o alternativă) Așa sau altfel?',
+							examples: [{
+								tags: [],
+								sources: ['NODEX'],
+								value: 'Da ori ba?',
+							}],
+							definitions: [],
 							expressions: [],
 							relations: {
-								synonyms: ['confirma'],
+								synonyms: [],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: [],
+							sources: ['NODEX'],
+							value:
+								'(La începutul unei propoziții semnalează că vorbitorul și-a amintit de ceva) Fiindcă a venit vorba.',
+							examples: [{
+								tags: [],
+								sources: ['NODEX'],
+								value: 'Da, era să uit.',
+							}],
+							definitions: [],
+							expressions: [],
+							relations: {
+								synonyms: ['apropo'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: [],
+							sources: ['NODEX'],
+							value: 'Întru totul.',
+							examples: [],
+							definitions: [],
+							expressions: [],
+							relations: {
+								synonyms: ['exact', 'întocmai'],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: ['(și) substantivat', 'neutru'],
+							sources: ['MDA2'],
+							value: 'Răspuns afirmativ.',
+							examples: [],
+							definitions: [{
+								tags: ['prin extensiune'],
+								sources: ['MDA2'],
+								value: 'Afirmație.',
+								examples: [],
+								definitions: [],
+								expressions: [],
+								relations: {
+									synonyms: ['afirmație'],
+									antonyms: [],
+									diminutives: [],
+									augmentatives: [],
+								},
+							}],
+							expressions: [],
+							relations: {
+								synonyms: [],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}],
+						expressions: [{
+							tags: ['locuțiune adverbială'],
+							sources: [`DEX '09`, 'MDA2', `DEX '98`, 'DLRLC'],
+							value: 'Ba da, exprimă răspunsul afirmativ la o întrebare negativă.',
+							examples: [{
+								sources: ['DLRLC'],
+								tags: [],
+								value: 'N-ai terminat? – Ba da.',
+							}],
+							expressions: [],
+							relations: {
+								synonyms: [],
+								antonyms: [],
+								diminutives: [],
+								augmentatives: [],
+							},
+						}, {
+							tags: [],
+							sources: ['MDA2'],
+							value: 'A zice (sau a spune) da = a face o afirmație.',
+							examples: [],
+							expressions: [{
+								sources: ['MDA2'],
+								tags: [],
+								value: 'Aproba.',
+								examples: [],
+								expressions: [],
+								relations: {
+									synonyms: ['aproba'],
+									antonyms: [],
+									diminutives: [],
+									augmentatives: [],
+								},
+							}, {
+								sources: ['MDA2'],
+								tags: ['prin extensiune'],
+								value: 'Confirma.',
+								examples: [],
+								expressions: [],
+								relations: {
+									synonyms: ['confirma'],
+									antonyms: [],
+									diminutives: [],
+									augmentatives: [],
+								},
+							}],
+							relations: {
+								synonyms: [],
 								antonyms: [],
 								diminutives: [],
 								augmentatives: [],
@@ -239,129 +249,179 @@ Deno.test('parser', async (test) => {
 						}],
 						relations: {
 							synonyms: [],
-							antonyms: [],
+							antonyms: ['nu'],
 							diminutives: [],
 							augmentatives: [],
 						},
-					}],
-					relations: {
-						synonyms: [],
-						antonyms: ['nu'],
-						diminutives: [],
-						augmentatives: [],
 					},
+				],
+				expressions: [],
+				etymology: [{
+					tags: ['limba rusă', 'limba sârbă, croată'],
+					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
+					value: 'da',
+				}, {
+					tags: ['limba bulgară', 'limba slavă (veche)'],
+					sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
+					value: 'da, да',
+				}],
+			});
+
+			const entriesShallow = results.synthesis.map((entry) => ({
+				...entry,
+				expressions: [],
+				examples: [],
+				definitions: [],
+			}));
+
+			assertEquals(entriesShallow, [
+				{
+					type: 'verb',
+					lemma: 'da',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['limba latină'],
+						sources: [`DEX '09`, `DEX '98`, 'NODEX'],
+						value: 'dare',
+					}],
 				},
-			],
-			expressions: [],
-			etymology: [{
-				tags: ['limba rusă', 'limba sârbă, croată'],
-				sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
-				value: 'da',
-			}, {
-				tags: ['limba bulgară', 'limba slavă (veche)'],
-				sources: [`DEX '09`, 'MDA2', `DEX '98`, 'NODEX'],
-				value: 'da, да',
-			}],
+				{
+					type: 'adverb',
+					lemma: 'dar',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['necunoscută'],
+						sources: [`DEX '09`, `DEX '98`],
+						value: '',
+					}],
+				},
+				{
+					type: 'conjuncție',
+					lemma: 'dar',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['necunoscută'],
+						sources: [`DEX '09`, `DEX '98`],
+						value: '',
+					}],
+				},
+				{
+					type: 'adverb',
+					lemma: 'darn',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['limba italiană'],
+						sources: [`DEX '09`, `DEX '98`, 'DN'],
+						value: 'indarnó',
+					}],
+				},
+				{
+					type: 'prefix',
+					lemma: 'deca',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['limba neogreacă'],
+						sources: [`DEX '09`, `DEX '98`, 'DN'],
+						value: 'déka',
+					}],
+				},
+				{
+					type: 'interjecție',
+					lemma: 'de / dec / deh',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['onomatopee'],
+						sources: [`DEX '09`, 'NODEX'],
+						value: '',
+					}],
+				},
+				{
+					type: 'prepoziție',
+					lemma: 'de',
+					examples: [],
+					definitions: [],
+					expressions: [],
+					etymology: [{
+						tags: ['limba latină'],
+						sources: [`DEX '09`],
+						value: 'de',
+					}],
+				},
+			]);
 		});
 
-		const entriesShallow = entries.map((entry) => ({ ...entry, expressions: [], examples: [], definitions: [] }));
+		await test.step('inflection', () => {
+			assertEquals(results.inflection.length, 8);
 
-		assertEquals(entriesShallow, [
-			{
-				type: 'verb',
-				lemma: 'da',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['limba latină'],
-					sources: [`DEX '09`, `DEX '98`, 'NODEX'],
-					value: 'dare',
-				}],
-			},
-			{
-				type: 'adverb',
-				lemma: 'dar',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['necunoscută'],
-					sources: [`DEX '09`, `DEX '98`],
-					value: '',
-				}],
-			},
-			{
-				type: 'conjuncție',
-				lemma: 'dar',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['necunoscută'],
-					sources: [`DEX '09`, `DEX '98`],
-					value: '',
-				}],
-			},
-			{
-				type: 'adverb',
-				lemma: 'darn',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['limba italiană'],
-					sources: [`DEX '09`, `DEX '98`, 'DN'],
-					value: 'indarnó',
-				}],
-			},
-			{
-				type: 'prefix',
-				lemma: 'deca',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['limba neogreacă'],
-					sources: [`DEX '09`, `DEX '98`, 'DN'],
-					value: 'déka',
-				}],
-			},
-			{
-				type: 'interjecție',
-				lemma: 'de / dec / deh',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['onomatopee'],
-					sources: [`DEX '09`, 'NODEX'],
-					value: '',
-				}],
-			},
-			{
-				type: 'prepoziție',
-				lemma: 'de',
-				examples: [],
-				definitions: [],
-				expressions: [],
-				etymology: [{
-					tags: ['limba latină'],
-					sources: [`DEX '09`],
-					value: 'de',
-				}],
-			},
-		]);
+			assertEquals(results.inflection, [
+				{
+					tags: ['adverb'],
+					index: 0,
+					lemma: 'da',
+				},
+				{
+					tags: ['verb', 'grupa I', 'conjugarea I'],
+					index: 1,
+					lemma: 'da',
+				},
+				{
+					tags: ['adverb'],
+					index: 1,
+					lemma: 'dar',
+				},
+				{
+					tags: ['conjuncție'],
+					index: 2,
+					lemma: 'dar',
+				},
+				{
+					tags: ['adverb'],
+					index: 0,
+					lemma: 'darn',
+				},
+				{
+					tags: ['prepoziție'],
+					index: 2,
+					lemma: 'de',
+				},
+				{
+					tags: ['interjecție'],
+					index: 0,
+					lemma: 'de',
+				},
+				{
+					tags: ['prefix'],
+					index: 0,
+					lemma: 'deca',
+				},
+			]);
+		});
 	});
 
-	await test.step('monosemantic', async () => {
-		const entriesOrUndefined = await Dexonline.get('întregime');
-		assertNotEquals(entriesOrUndefined, undefined);
+	await test.step('monosemantic', async (test) => {
+		const resultsOrUndefined = await Dexonline.get('întregime');
+		assertNotEquals(resultsOrUndefined, undefined);
 
-		const entries = entriesOrUndefined!;
+		const results = resultsOrUndefined!;
 
-		assertEquals(entries, [
-			{
+		await test.step('synthesis', () => {
+			assertEquals(results.synthesis.length, 1);
+
+			const first = results.synthesis.shift()!;
+
+			assertEquals(first, {
 				type: 'substantiv feminin',
 				lemma: 'întregime',
 				examples: [],
@@ -442,8 +502,20 @@ Deno.test('parser', async (test) => {
 					sources: [`DEX '09`, `DEX '98`],
 					value: 'Întreg + sufix -ime.',
 				}],
-			},
-		]);
+			});
+		});
+
+		await test.step('inflection', () => {
+			assertEquals(results.inflection.length, 1);
+
+			const first = results.inflection.shift()!;
+
+			assertEquals(first, {
+				tags: ['substantiv feminin'],
+				index: 0,
+				lemma: 'întregime',
+			});
+		});
 	});
 
 	await test.step('configuration', async (test) => {
@@ -457,11 +529,19 @@ Deno.test('parser', async (test) => {
 
 			const body = await response.text();
 
-			const entriesStrict = Dexonline.parse(body, { mode: SearchModes.Strict, word: 'a' });
 			const entriesLax = Dexonline.parse(body, { mode: SearchModes.Lax });
+			const entriesStrict = Dexonline.parse(body, { mode: SearchModes.Strict, word: 'a' });
 
-			assertEquals(entriesLax.every((entry) => entry.lemma === 'a'), false);
-			assertEquals(entriesStrict.every((entry) => entry.lemma === 'a'), true);
+			assertEquals(
+				entriesLax.synthesis.every((entry) => entry.lemma === 'a') &&
+					entriesLax.inflection.every((entry) => entry.lemma === 'a'),
+				false,
+			);
+			assertEquals(
+				entriesStrict.synthesis.every((entry) => entry.lemma === 'a') &&
+					entriesStrict.inflection.every((entry) => entry.lemma === 'a'),
+				true,
+			);
 		});
 	});
 });
