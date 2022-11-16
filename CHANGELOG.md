@@ -1,4 +1,4 @@
-## 2.0.0 (Unreleased)
+## 2.0.0
 
 FEATURES:
 
@@ -7,6 +7,8 @@ FEATURES:
     - Tags
     - Lemma
     - Type
+  - Body:
+    - Table
 
 ## 1.0.1
 

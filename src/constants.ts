@@ -54,6 +54,9 @@ namespace Selectors {
 						// Do not ask me why: I don't know.
 						tag: 'span[class="tag "]',
 					},
+					body: {
+						element: 'table[class=lexeme]',
+					},
 				},
 			},
 		},

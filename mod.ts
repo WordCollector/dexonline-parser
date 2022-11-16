@@ -1,3 +1,5 @@
+import * as csv from 'std/encoding/csv.ts';
+import { default as convertTableToCSV } from 'table-to-csv';
 import { Cheerio, CheerioAPI, Element, load } from 'cheerio';
 import { ContentTabs, Expressions, Links, Selectors, valueToEnum, zip } from './src/mod.ts';
 
@@ -304,12 +306,16 @@ namespace Dexonline {
 	}
 
 	namespace Inflection {
-		export interface InflectionTable extends Header {}
+		export interface InflectionTable extends Header, Body {}
 
 		interface Header {
 			tags: Array<string>;
 			index: number;
 			lemma: string;
+		}
+
+		interface Body {
+			table: Array<Array<string>>;
 		}
 
 		export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<InflectionTable> {
@@ -318,15 +324,17 @@ namespace Dexonline {
 			const entries = inflection.find(Selectors.contentTabs.inflection.entry.element).toArray();
 
 			return <Array<InflectionTable>> entries
-				.map<InflectionTable | undefined>((element) => {
-					const table = $(element).children(Selectors.contentTabs.inflection.entry.table.element).first();
+				.map<InflectionTable | undefined>((entryElement) => {
+					const tableElement = $(entryElement).children(Selectors.contentTabs.inflection.entry.table.element).first();
 
-					const header = parseHeader($, table);
+					const header = parseHeader($, tableElement);
 					if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
 						return undefined;
 					}
 
-					return { ...header };
+					const body = parseBody(tableElement);
+
+					return { ...header, ...body };
 				})
 				.filter((entryOrUndefined) => !!entryOrUndefined);
 		}
@@ -344,6 +352,14 @@ namespace Dexonline {
 				.toArray();
 
 			return { tags, lemma: lemma!, index };
+		}
+
+		function parseBody(body: Cheerio<Element>): Body {
+			const section = body.children(Selectors.contentTabs.inflection.entry.table.body.element);
+
+			const table = csv.parse(convertTableToCSV(section.html(), { tableSelector: 'tbody' }));
+
+			return { table };
 		}
 	}
 }
