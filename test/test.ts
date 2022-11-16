@@ -1,5 +1,5 @@
 import { assertEquals, assertNotEquals } from 'std/testing/asserts.ts';
-import { Dexonline, DictionaryFlags, SearchModes } from '../mod.ts';
+import { Dexonline, DictionaryFlags, MatchingModes } from '../mod.ts';
 import { Links } from '../src/mod.ts';
 
 Deno.test('parser', async (test) => {
@@ -727,8 +727,8 @@ Deno.test('parser', async (test) => {
 
 			const body = await response.text();
 
-			const entriesLax = Dexonline.parse(body, { mode: SearchModes.Lax });
-			const entriesStrict = Dexonline.parse(body, { mode: SearchModes.Strict, word: 'a' });
+			const entriesLax = Dexonline.parse(body, { mode: MatchingModes.Lax });
+			const entriesStrict = Dexonline.parse(body, { mode: MatchingModes.Strict, word: 'a' });
 
 			assertEquals(
 				entriesLax.synthesis.every((entry) => entry.lemma === 'a') &&

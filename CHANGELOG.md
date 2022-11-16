@@ -1,3 +1,11 @@
+## 3.0.0 (Unreleased)
+
+BREAKING CHANGES:
+
+- Rename types:
+  - `SearchOptions` -> `ParserOptions`
+  - `SearchModes` -> `MatchingModes`
+
 ## 2.1.0
 
 FEATURES:

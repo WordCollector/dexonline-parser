@@ -3,8 +3,8 @@ import { default as convertTableToCSV } from 'table-to-csv';
 import { Cheerio, CheerioAPI, Element, load } from 'cheerio';
 import { ContentTabs, Expressions, Links, Selectors, valueToEnum, zip } from './src/mod.ts';
 
-/** Specifies the strictness of word searches. */
-enum SearchModes {
+/** Specifies the strictness of word matching. */
+enum MatchingModes {
 	/** Consider only lemmas that match the search term exactly. */
 	Strict,
 
@@ -13,13 +13,13 @@ enum SearchModes {
 }
 
 /** Defines the available options for getting a word from the dictionary. */
-interface SearchOptions {
+interface ParserOptions {
 	/**
-	 * Specifies the mode to use by the parser for parsing results.
+	 * Specifies the mode to use by the parser for matching results to the search term.
 	 *
 	 * @defaultValue `SearchModes.Lax`
 	 */
-	mode: SearchModes;
+	mode: MatchingModes;
 
 	/** Configures Dexonline's response. */
 	flags: DictionaryFlags;
@@ -72,14 +72,14 @@ enum DictionaryFlags {
 }
 
 /** The default search options. */
-const defaultSearchOptions: SearchOptions = {
-	mode: SearchModes.Lax,
+const defaultSearchOptions: ParserOptions = {
+	mode: MatchingModes.Lax,
 	flags: DictionaryFlags.None,
 } as const;
 
 type SearchOptionsWithWord<IsPartial extends boolean = false> =
-	& (IsPartial extends true ? Partial<SearchOptions> : SearchOptions)
-	& ({ mode: SearchModes.Lax } | { mode: SearchModes.Strict; word: string });
+	& (IsPartial extends true ? Partial<ParserOptions> : ParserOptions)
+	& ({ mode: MatchingModes.Lax } | { mode: MatchingModes.Strict; word: string });
 
 namespace Dexonline {
 	interface Results {
@@ -89,7 +89,7 @@ namespace Dexonline {
 
 	export async function get(
 		word: string,
-		options: Partial<SearchOptions> = defaultSearchOptions,
+		options: Partial<ParserOptions> = defaultSearchOptions,
 	): Promise<Results | undefined> {
 		const response = await fetch(Links.definition(word), {
 			headers: {
@@ -220,7 +220,7 @@ namespace Dexonline {
 				.map<Lemma | undefined>(
 					([headerElement, bodyElement]) => {
 						const header = parseHeader($(headerElement));
-						if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
+						if (options.mode === MatchingModes.Strict && header.lemma !== options.word) {
 							return undefined;
 						}
 
@@ -386,7 +386,7 @@ namespace Dexonline {
 					const tableElement = $(entryElement).children(Selectors.contentTabs.inflection.entry.table.element).first();
 
 					const header = parseHeader($, tableElement);
-					if (options.mode === SearchModes.Strict && header.lemma !== options.word) {
+					if (options.mode === MatchingModes.Strict && header.lemma !== options.word) {
 						return undefined;
 					}
 
@@ -432,5 +432,5 @@ namespace Dexonline {
 	}
 }
 
-export { Dexonline, DictionaryFlags, SearchModes };
-export type { SearchOptions };
+export { Dexonline, DictionaryFlags, MatchingModes };
+export type { ParserOptions };
