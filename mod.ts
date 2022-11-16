@@ -14,14 +14,68 @@ enum SearchModes {
 
 /** Defines the available options for getting a word from the dictionary. */
 interface SearchOptions {
-	/** The {@link SearchModes | mode} to use for searching the dictionary. Default: {@link SearchModes.Lax | Lax} */
+	/**
+	 * Specifies the mode to use by the parser for parsing results.
+	 *
+	 * @defaultValue `SearchModes.Lax`
+	 */
 	mode: SearchModes;
+
+	/** Configures Dexonline's response. */
+	flags: DictionaryFlags;
+}
+
+/**
+ * Bit-based flags for configuring the dictionary and the results sent back by it.
+ *
+ * @privateRemarks
+ * At the time of writing, there are just 5 options.
+ * The 5th option ('always show advanced search bar') has no function outside of UI.
+ * If for any case there were a need to add support for this option, its bit value is __64__.
+ * The preferences with bit values 16, 32 and 128 are no longer used.
+ */
+enum DictionaryFlags {
+	/** No flags. */
+	None = 0,
+
+	/**
+	 * Replace letters with the comma diacritic ('ș', 'ț') with their cedilla variants ('ş', 'ţ').
+	 */
+	UseCedillas = 1,
+
+	/**
+	 * Do not include words that are identical except for diacritics.
+	 *
+	 * For example, without this flag enabled, a query for the word 'ca' will also return 'că'.
+	 */
+	MatchDiacritics = 2,
+
+	/**
+	 * Use the orthography from before the 1993 reform. (sînt, cînd, rîu, vîjîi)
+	 */
+	UsePreReformOrthography = 4,
+
+	/**
+	 * Return entries only from normative dictionaries published by the Institute of Linguistics
+	 * (Institutul de Lingvistică) of the Romanian Academy (Academia Română).
+	 *
+	 * Enabling this flag will ensure that the only results provided are from the latest editions
+	 * of the DEX and the DOOM.
+	 *
+	 * @remarks
+	 * DEX - Explanatory dictionary of the Romanian language (Dicționarul explicativ al limbii
+	 * române)
+	 * DOOM - Orthographic, orthoepic and morphological dictionary of the Romanian language
+	 * (Dicționarul ortografic, ortoepic și morfologic al limbii române)
+	 */
+	SearchOnlyNormativeDictionaries = 8,
 }
 
 /** The default search options. */
 const defaultSearchOptions: SearchOptions = {
 	mode: SearchModes.Lax,
-};
+	flags: DictionaryFlags.None,
+} as const;
 
 type SearchOptionsWithWord<IsPartial extends boolean = false> =
 	& (IsPartial extends true ? Partial<SearchOptions> : SearchOptions)
@@ -37,7 +91,11 @@ namespace Dexonline {
 		word: string,
 		options: Partial<SearchOptions> = defaultSearchOptions,
 	): Promise<Results | undefined> {
-		const response = await fetch(Links.definition(word));
+		const response = await fetch(Links.definition(word), {
+			headers: {
+				'Cookie': `prefs[anonymousPrefs]=${options.flags}`,
+			},
+		});
 		if (!response.ok) {
 			await response.body?.cancel();
 			return undefined;
@@ -357,6 +415,11 @@ namespace Dexonline {
 		function parseBody(body: Cheerio<Element>): Body {
 			const section = body.children(Selectors.contentTabs.inflection.entry.table.body.element);
 
+			// Certain words are listed in the inflection tab but do not show up with a table.
+			if (section.length === 0) {
+				return { table: [] };
+			}
+
 			const table = csv.parse(convertTableToCSV(section.html()!, {
 				tableSelector: 'tbody',
 				includeheaders: true,
@@ -369,5 +432,5 @@ namespace Dexonline {
 	}
 }
 
-export { Dexonline, SearchModes };
+export { Dexonline, DictionaryFlags, SearchModes };
 export type { SearchOptions };

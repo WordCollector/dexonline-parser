@@ -1,5 +1,5 @@
 import { assertEquals, assertNotEquals } from 'std/testing/asserts.ts';
-import { Dexonline, SearchModes } from '../mod.ts';
+import { Dexonline, DictionaryFlags, SearchModes } from '../mod.ts';
 import { Links } from '../src/mod.ts';
 
 Deno.test('parser', async (test) => {
@@ -717,7 +717,7 @@ Deno.test('parser', async (test) => {
 	});
 
 	await test.step('configuration', async (test) => {
-		await test.step('strict/lax mode', async () => {
+		await test.step('parser mode', async () => {
 			const response = await fetch(Links.definition('a'));
 			if (!response.ok) {
 				await response.body?.cancel();
@@ -740,6 +740,54 @@ Deno.test('parser', async (test) => {
 					entriesStrict.inflection.every((entry) => entry.lemma === 'a'),
 				true,
 			);
+		});
+
+		await test.step('flags', async (test) => {
+			const testCedilla = async () => {
+				const resultsOrUndefined = await Dexonline.get('și', { flags: DictionaryFlags.UseCedillas });
+				assertNotEquals(resultsOrUndefined, undefined);
+
+				const results = resultsOrUndefined!;
+				const resultsStringified = JSON.stringify(results);
+
+				assertNotEquals(resultsStringified.includes('ș') || resultsStringified.includes('Ș'), true);
+				assertNotEquals(resultsStringified.includes('ț') || resultsStringified.includes('Ț'), true);
+			};
+
+			const testMatchDiacritics = async () => {
+				const resultsOrUndefined = await Dexonline.get('ca', { flags: DictionaryFlags.MatchDiacritics });
+				assertNotEquals(resultsOrUndefined, undefined);
+
+				const results = resultsOrUndefined!;
+
+				assertNotEquals(results.synthesis.some((entry) => entry.lemma === 'că'), true);
+			};
+
+			const testUsePreReformOrtography = async () => {
+				const resultsOrUndefined = await Dexonline.get('și', { flags: DictionaryFlags.UsePreReformOrthography });
+				assertNotEquals(resultsOrUndefined, undefined);
+
+				const results = resultsOrUndefined!;
+				const resultsStringified = JSON.stringify(results);
+
+				assertNotEquals(resultsStringified.includes('â') || resultsStringified.includes('Â'), true);
+			};
+
+			const testSearchOnlyNormativeDictionaries = async () => {
+				const resultsOrUndefined = await Dexonline.get('bengos', {
+					flags: DictionaryFlags.SearchOnlyNormativeDictionaries,
+				});
+				assertNotEquals(resultsOrUndefined, undefined);
+
+				const results = resultsOrUndefined!;
+
+				assertEquals(results.synthesis.length, 0);
+			};
+
+			await test.step('cedilla', testCedilla);
+			await test.step('match diacritics', testMatchDiacritics);
+			await test.step('use pre-reform orthography', testUsePreReformOrtography);
+			await test.step('search only normative dictionaries', testSearchOnlyNormativeDictionaries);
 		});
 	});
 });

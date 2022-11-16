@@ -1,3 +1,17 @@
+## 2.1.0
+
+FEATURES:
+
+- Add support for dictionary preferences:
+  - Use cedillas instead of commas
+  - Match diacritics exactly
+  - Pre-reform orthography
+  - Search normative dictionaries
+
+FIXES:
+
+- Handle case where there is no inflection table for a given term.
+
 ## 2.0.0
 
 FEATURES:
