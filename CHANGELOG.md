@@ -1,3 +1,15 @@
+## 2.0.0
+
+FEATURES:
+
+- Implement parsing of the inflection tab:
+  - Headers:
+    - Tags
+    - Lemma
+    - Type
+  - Body:
+    - Table
+
 ## 1.0.1
 
 OTHER:
@@ -10,11 +22,11 @@ OTHER:
 
 FEATURES:
 
-- Options:
+- Add parser options:
   - Modes:
     - Strict (Match identical)
     - Lax (Match similar)
-- Parsing entries in the 'Synthesis' tab:
+- Implement parsing of the synthesis tab:
   - Headers:
     - Lemma
     - Type
