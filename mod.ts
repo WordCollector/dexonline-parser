@@ -357,7 +357,12 @@ namespace Dexonline {
 		function parseBody(body: Cheerio<Element>): Body {
 			const section = body.children(Selectors.contentTabs.inflection.entry.table.body.element);
 
-			const table = csv.parse(convertTableToCSV(section.html(), { tableSelector: 'tbody' }));
+			const table = csv.parse(convertTableToCSV(section.html()!, {
+				tableSelector: 'tbody',
+				includeheaders: true,
+				limitwhitespace: true,
+				verbose: false,
+			}));
 
 			return { table };
 		}
