@@ -1,4 +1,8 @@
-## 3.0.0 (Unreleased)
+## 3.0.0
+
+IMPROVEMENTS:
+
+- Improve `README.md` by adding more examples.
 
 BREAKING CHANGES:
 
