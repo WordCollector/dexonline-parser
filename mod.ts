@@ -1,75 +1,17 @@
 import * as csv from 'std/encoding/csv.ts';
 import { default as convertTableToCSV } from 'table-to-csv';
 import { Cheerio, CheerioAPI, Element, load } from 'cheerio';
-import { ContentTabs, Expressions, Links, Selectors, valueToEnum, zip } from './src/mod.ts';
-
-/** Specifies the strictness of word matching. */
-enum MatchingModes {
-	/** Consider only lemmas that match the search term exactly. */
-	Strict,
-
-	/** Consider all lemmas similar to the search term. */
-	Lax,
-}
-
-/** Defines the available options for getting a word from the dictionary. */
-interface ParserOptions {
-	/**
-	 * Specifies the mode to use by the parser for matching results to the search term.
-	 *
-	 * @defaultValue `SearchModes.Lax`
-	 */
-	mode: MatchingModes;
-
-	/** Configures Dexonline's response. */
-	flags: DictionaryFlags;
-}
-
-/**
- * Bit-based flags for configuring the dictionary and the results sent back by it.
- *
- * @privateRemarks
- * At the time of writing, there are just 5 options.
- * The 5th option ('always show advanced search bar') has no function outside of UI.
- * If for any case there were a need to add support for this option, its bit value is __64__.
- * The preferences with bit values 16, 32 and 128 are no longer used.
- */
-enum DictionaryFlags {
-	/** No flags. */
-	None = 0,
-
-	/**
-	 * Replace letters with the comma diacritic ('ș', 'ț') with their cedilla variants ('ş', 'ţ').
-	 */
-	UseCedillas = 1,
-
-	/**
-	 * Do not include words that are identical except for diacritics.
-	 *
-	 * For example, without this flag enabled, a query for the word 'ca' will also return 'că'.
-	 */
-	MatchDiacritics = 2,
-
-	/**
-	 * Use the orthography from before the 1993 reform. (sînt, cînd, rîu, vîjîi)
-	 */
-	UsePreReformOrthography = 4,
-
-	/**
-	 * Return entries only from normative dictionaries published by the Institute of Linguistics
-	 * (Institutul de Lingvistică) of the Romanian Academy (Academia Română).
-	 *
-	 * Enabling this flag will ensure that the only results provided are from the latest editions
-	 * of the DEX and the DOOM.
-	 *
-	 * @remarks
-	 * DEX - Explanatory dictionary of the Romanian language (Dicționarul explicativ al limbii
-	 * române)
-	 * DOOM - Orthographic, orthoepic and morphological dictionary of the Romanian language
-	 * (Dicționarul ortografic, ortoepic și morfologic al limbii române)
-	 */
-	SearchOnlyNormativeDictionaries = 8,
-}
+import {
+	ContentTabs,
+	DictionaryFlags,
+	Expressions,
+	Links,
+	MatchingModes,
+	ParserOptions,
+	Selectors,
+	valueToEnum,
+	zip,
+} from './src/mod.ts';
 
 /** The default search options. */
 const defaultSearchOptions: ParserOptions = {
@@ -82,7 +24,7 @@ type SearchOptionsWithWord<IsPartial extends boolean = false> =
 	& ({ mode: MatchingModes.Lax } | { mode: MatchingModes.Strict; word: string });
 
 namespace Dexonline {
-	interface Results {
+	export interface Results {
 		synthesis: Array<Synthesis.Lemma>;
 		inflection: Array<Inflection.InflectionTable>;
 	}
@@ -118,319 +60,319 @@ namespace Dexonline {
 
 		return { synthesis, inflection };
 	}
+}
 
-	namespace Synthesis {
-		export interface Lemma extends Header, Body {}
+namespace Synthesis {
+	export interface Lemma extends Header, Body {}
 
-		interface Header {
-			type: string;
-			lemma: string;
+	interface Header {
+		type: string;
+		lemma: string;
+	}
+
+	interface Tree {
+		examples: Array<Example>;
+		definitions: Array<Definition>;
+		expressions: Array<Expression>;
+	}
+
+	interface Body extends Tree {
+		etymology: Array<Etymology>;
+	}
+
+	interface WithMetadata<T> {
+		tags: Array<string>;
+		sources: Array<string>;
+		value: T;
+	}
+
+	namespace Row {
+		interface Contents extends WithMetadata<string> {}
+
+		export interface Row extends Contents {}
+
+		export function parse($: CheerioAPI, row: Cheerio<Element>): Row {
+			const contents = getContents($, row);
+
+			return { ...contents };
 		}
 
-		interface Tree {
-			examples: Array<Example>;
-			definitions: Array<Definition>;
-			expressions: Array<Expression>;
-		}
+		function getContents($: CheerioAPI, row: Cheerio<Element>): Contents {
+			const section = row.children(Selectors.contentTabs.synthesis.body.row.contents.element);
 
-		interface Body extends Tree {
-			etymology: Array<Etymology>;
-		}
+			const tags = section.children(Selectors.contentTabs.synthesis.body.row.contents.tags).children().map((
+				_index,
+				tag,
+			) => $(tag).text())
+				.toArray();
+			const text = section.children(Selectors.contentTabs.synthesis.body.row.contents.text).text().trim();
+			const sources = section.children(Selectors.contentTabs.synthesis.body.row.contents.sources).children().map((
+				_index,
+				tag,
+			) => $(tag).text().trim())
+				.toArray();
 
-		interface WithMetadata<T> {
-			tags: Array<string>;
-			sources: Array<string>;
-			value: T;
-		}
-
-		namespace Row {
-			interface Contents extends WithMetadata<string> {}
-
-			export interface Row extends Contents {}
-
-			export function parse($: CheerioAPI, row: Cheerio<Element>): Row {
-				const contents = getContents($, row);
-
-				return { ...contents };
-			}
-
-			function getContents($: CheerioAPI, row: Cheerio<Element>): Contents {
-				const section = row.children(Selectors.contentTabs.synthesis.body.row.contents.element);
-
-				const tags = section.children(Selectors.contentTabs.synthesis.body.row.contents.tags).children().map((
-					_index,
-					tag,
-				) => $(tag).text())
-					.toArray();
-				const text = section.children(Selectors.contentTabs.synthesis.body.row.contents.text).text().trim();
-				const sources = section.children(Selectors.contentTabs.synthesis.body.row.contents.sources).children().map((
-					_index,
-					tag,
-				) => $(tag).text().trim())
-					.toArray();
-
-				return { tags, value: text, sources };
-			}
-		}
-
-		enum RelationTypes {
-			Synonym = 'synonyms',
-			Antonym = 'antonyms',
-			Diminutive = 'diminutives',
-			Augmentative = 'augmentatives',
-		}
-
-		const relationTypeNameToRelationType: Record<string, RelationTypes> = {
-			'sinonime': RelationTypes.Synonym,
-			'antonime': RelationTypes.Antonym,
-			'diminutive': RelationTypes.Diminutive,
-			'augmentative': RelationTypes.Augmentative,
-		};
-
-		type Relations = Record<
-			typeof RelationTypes[keyof typeof RelationTypes],
-			Array<string>
-		>;
-
-		interface Example extends Row.Row {}
-		interface Definition extends Row.Row {
-			definitions: Array<Definition>;
-			examples: Array<Example>;
-			expressions: Array<Expression>;
-			relations: Relations;
-		}
-		interface Expression extends Row.Row {
-			examples: Array<Example>;
-			expressions: Array<Expression>;
-			relations: Relations;
-		}
-		interface Etymology extends Row.Row {}
-
-		export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<Lemma> {
-			const synthesis = $(Selectors.contentTab(ContentTabs.Synthesis));
-
-			const headerBodyTuples = zip(
-				synthesis
-					.children(Selectors.contentTabs.synthesis.header.element)
-					.children(Selectors.contentTabs.synthesis.header.container).toArray(),
-				synthesis.children(Selectors.contentTabs.synthesis.body.element).toArray(),
-			);
-
-			return <Array<Lemma>> headerBodyTuples
-				.map<Lemma | undefined>(
-					([headerElement, bodyElement]) => {
-						const header = parseHeader($(headerElement));
-						if (options.mode === MatchingModes.Strict && header.lemma !== options.word) {
-							return undefined;
-						}
-
-						const body = parseBody($, $(bodyElement));
-
-						return { ...header, ...body };
-					},
-				)
-				.filter((entryOrUndefined) => !!entryOrUndefined);
-		}
-
-		export function parseHeader(header: Cheerio<Element>): Header {
-			const typeElement = header.children(Selectors.contentTabs.synthesis.header.type);
-			const type = typeElement.text().trim().toLowerCase();
-			typeElement.remove();
-
-			const [singular, _plural] = <[string, string]> header.text().trim().split(', ');
-			const lemma = singular;
-
-			return { type, lemma };
-		}
-
-		export function parseBody($: CheerioAPI, body: Cheerio<Element>): Body {
-			const { examples, definitions, expressions } = getTree($, body);
-			const etymology = getEtymology($, body);
-
-			return { examples, definitions, expressions, etymology };
-		}
-
-		enum TreeTypes {
-			Example = 'example',
-			Definition = 'meaning',
-			Expression = 'expression',
-		}
-
-		export function getTree($: CheerioAPI, body: Cheerio<Element>): Tree {
-			const section = body.children(Selectors.contentTabs.synthesis.body.tree.element);
-			const subtrees = section.children().toArray();
-
-			if (subtrees.length === 0) {
-				return { examples: [], definitions: [], expressions: [] };
-			}
-
-			const subtreesSorted = subtrees.reduce<Record<keyof Tree, Array<Element>>>(
-				(subtrees, subtree) => {
-					const typeString = $(subtree)
-						.attr('class')
-						?.split(' ')
-						.find((className) => Expressions.treeType.test(className));
-					if (!typeString) return subtrees;
-
-					const [_match, typeName] = Expressions.treeType.exec(typeString)!;
-
-					const type = valueToEnum(TreeTypes, typeName!);
-					if (!type) return subtrees;
-
-					switch (type) {
-						case TreeTypes.Example: {
-							subtrees.examples.push(subtree);
-							break;
-						}
-						case TreeTypes.Definition: {
-							subtrees.definitions.push(subtree);
-							break;
-						}
-						case TreeTypes.Expression: {
-							subtrees.expressions.push(subtree);
-							break;
-						}
-					}
-
-					return subtrees;
-				},
-				{ examples: [], definitions: [], expressions: [] },
-			);
-
-			return {
-				examples: subtreesSorted.examples.map((example) => getBranch($, $(example), TreeTypes.Example)),
-				definitions: subtreesSorted.definitions.map((definition) => getBranch($, $(definition), TreeTypes.Definition)),
-				expressions: subtreesSorted.expressions.map((expression) => getBranch($, $(expression), TreeTypes.Expression)),
-			};
-		}
-
-		function getBranch<T extends TreeTypes, R extends Row.Row>(
-			$: CheerioAPI,
-			branch: Cheerio<Element>,
-			type: T,
-		): R {
-			const root = $(branch.children(Selectors.contentTabs.synthesis.body.row.element));
-			const row = Row.parse($, root);
-
-			if (type === TreeTypes.Example) {
-				return row as R;
-			}
-
-			const sharedProperties = { ...row, relations: getRelations($, root) };
-			const { examples, definitions, expressions } = getTree($, branch);
-
-			if (type === TreeTypes.Expression) {
-				return { ...sharedProperties, examples, expressions } as unknown as R;
-			}
-
-			return { ...sharedProperties, examples, definitions, expressions } as unknown as R;
-		}
-
-		function getRelations($: CheerioAPI, row: Cheerio<Element>): Relations {
-			const section = row.children(Selectors.contentTabs.synthesis.body.row.relations.element);
-			const groups = section.children().toArray();
-
-			return groups.reduce<Relations>(
-				(relations, group) => {
-					if (!group.firstChild) return relations;
-
-					const typeElement = $(group).children().first().remove();
-					const typeString = typeElement.text().trim().toLowerCase().replace(':', '');
-
-					const type = relationTypeNameToRelationType[typeString];
-					if (!type) return relations;
-
-					const terms = $(group).children().toArray()
-						.map((node) => $(node).text())
-						.map((term) => term.trim())
-						.filter((term) => term.length !== 0);
-
-					relations[type!].push(...terms);
-
-					return relations;
-				},
-				{ synonyms: [], antonyms: [], diminutives: [], augmentatives: [] },
-			);
-		}
-
-		function getEtymology($: CheerioAPI, body: Cheerio<Element>): Array<Etymology> {
-			const section = body.children(Selectors.contentTabs.synthesis.body.etymology.element);
-
-			const entries = section.children(Selectors.contentTabs.synthesis.body.etymology.tree).children();
-			const rows = entries.children(Selectors.contentTabs.synthesis.body.row.element);
-
-			return rows.map((_index, row) => Row.parse($, $(row))).toArray();
+			return { tags, value: text, sources };
 		}
 	}
 
-	namespace Inflection {
-		export interface InflectionTable extends Header, Body {}
+	enum RelationTypes {
+		Synonym = 'synonyms',
+		Antonym = 'antonyms',
+		Diminutive = 'diminutives',
+		Augmentative = 'augmentatives',
+	}
 
-		interface Header {
-			tags: Array<string>;
-			index: number;
-			lemma: string;
-		}
+	const relationTypeNameToRelationType: Record<string, RelationTypes> = {
+		'sinonime': RelationTypes.Synonym,
+		'antonime': RelationTypes.Antonym,
+		'diminutive': RelationTypes.Diminutive,
+		'augmentative': RelationTypes.Augmentative,
+	};
 
-		interface Body {
-			table: Array<Array<string>>;
-		}
+	type Relations = Record<
+		typeof RelationTypes[keyof typeof RelationTypes],
+		Array<string>
+	>;
 
-		export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<InflectionTable> {
-			const inflection = $(Selectors.contentTab(ContentTabs.Inflection));
+	interface Example extends Row.Row {}
+	interface Definition extends Row.Row {
+		definitions: Array<Definition>;
+		examples: Array<Example>;
+		expressions: Array<Expression>;
+		relations: Relations;
+	}
+	interface Expression extends Row.Row {
+		examples: Array<Example>;
+		expressions: Array<Expression>;
+		relations: Relations;
+	}
+	interface Etymology extends Row.Row {}
 
-			const entries = inflection.find(Selectors.contentTabs.inflection.entry.element).toArray();
+	export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<Lemma> {
+		const synthesis = $(Selectors.contentTab(ContentTabs.Synthesis));
 
-			return <Array<InflectionTable>> entries
-				.map<InflectionTable | undefined>((entryElement) => {
-					const tableElement = $(entryElement).children(Selectors.contentTabs.inflection.entry.table.element).first();
+		const headerBodyTuples = zip(
+			synthesis
+				.children(Selectors.contentTabs.synthesis.header.element)
+				.children(Selectors.contentTabs.synthesis.header.container).toArray(),
+			synthesis.children(Selectors.contentTabs.synthesis.body.element).toArray(),
+		);
 
-					const header = parseHeader($, tableElement);
+		return <Array<Lemma>> headerBodyTuples
+			.map<Lemma | undefined>(
+				([headerElement, bodyElement]) => {
+					const header = parseHeader($(headerElement));
 					if (options.mode === MatchingModes.Strict && header.lemma !== options.word) {
 						return undefined;
 					}
 
-					const body = parseBody(tableElement);
+					const body = parseBody($, $(bodyElement));
 
 					return { ...header, ...body };
-				})
-				.filter((entryOrUndefined) => !!entryOrUndefined);
+				},
+			)
+			.filter((entryOrUndefined) => !!entryOrUndefined);
+	}
+
+	export function parseHeader(header: Cheerio<Element>): Header {
+		const typeElement = header.children(Selectors.contentTabs.synthesis.header.type);
+		const type = typeElement.text().trim().toLowerCase();
+		typeElement.remove();
+
+		const [singular, _plural] = <[string, string]> header.text().trim().split(', ');
+		const lemma = singular;
+
+		return { type, lemma };
+	}
+
+	export function parseBody($: CheerioAPI, body: Cheerio<Element>): Body {
+		const { examples, definitions, expressions } = getTree($, body);
+		const etymology = getEtymology($, body);
+
+		return { examples, definitions, expressions, etymology };
+	}
+
+	enum TreeTypes {
+		Example = 'example',
+		Definition = 'meaning',
+		Expression = 'expression',
+	}
+
+	export function getTree($: CheerioAPI, body: Cheerio<Element>): Tree {
+		const section = body.children(Selectors.contentTabs.synthesis.body.tree.element);
+		const subtrees = section.children().toArray();
+
+		if (subtrees.length === 0) {
+			return { examples: [], definitions: [], expressions: [] };
 		}
 
-		function parseHeader($: CheerioAPI, header: Cheerio<Element>): Header {
-			const section = header.children(Selectors.contentTabs.inflection.entry.table.header.element);
+		const subtreesSorted = subtrees.reduce<Record<keyof Tree, Array<Element>>>(
+			(subtrees, subtree) => {
+				const typeString = $(subtree)
+					.attr('class')
+					?.split(' ')
+					.find((className) => Expressions.treeType.test(className));
+				if (!typeString) return subtrees;
 
-			const lemmaString = section.children(Selectors.contentTabs.inflection.entry.table.header.lemma).html()!;
-			const [_match, lemma, _superscriptHtml, indexString] = Expressions.tableLemmaWithIndex.exec(lemmaString)!;
-			const index = indexString ? Number(indexString) - 1 : 0;
+				const [_match, typeName] = Expressions.treeType.exec(typeString)!;
 
-			const tags = section.children(Selectors.contentTabs.inflection.entry.table.header.tag)
-				.children()
-				.map((_index, tag) => $(tag).text())
-				.toArray();
+				const type = valueToEnum(TreeTypes, typeName!);
+				if (!type) return subtrees;
 
-			return { tags, lemma: lemma!, index };
+				switch (type) {
+					case TreeTypes.Example: {
+						subtrees.examples.push(subtree);
+						break;
+					}
+					case TreeTypes.Definition: {
+						subtrees.definitions.push(subtree);
+						break;
+					}
+					case TreeTypes.Expression: {
+						subtrees.expressions.push(subtree);
+						break;
+					}
+				}
+
+				return subtrees;
+			},
+			{ examples: [], definitions: [], expressions: [] },
+		);
+
+		return {
+			examples: subtreesSorted.examples.map((example) => getBranch($, $(example), TreeTypes.Example)),
+			definitions: subtreesSorted.definitions.map((definition) => getBranch($, $(definition), TreeTypes.Definition)),
+			expressions: subtreesSorted.expressions.map((expression) => getBranch($, $(expression), TreeTypes.Expression)),
+		};
+	}
+
+	function getBranch<T extends TreeTypes, R extends Row.Row>(
+		$: CheerioAPI,
+		branch: Cheerio<Element>,
+		type: T,
+	): R {
+		const root = $(branch.children(Selectors.contentTabs.synthesis.body.row.element));
+		const row = Row.parse($, root);
+
+		if (type === TreeTypes.Example) {
+			return row as R;
 		}
 
-		function parseBody(body: Cheerio<Element>): Body {
-			const section = body.children(Selectors.contentTabs.inflection.entry.table.body.element);
+		const sharedProperties = { ...row, relations: getRelations($, root) };
+		const { examples, definitions, expressions } = getTree($, branch);
 
-			// Certain words are listed in the inflection tab but do not show up with a table.
-			if (section.length === 0) {
-				return { table: [] };
-			}
-
-			const table = csv.parse(convertTableToCSV(section.html()!, {
-				tableSelector: 'tbody',
-				includeheaders: true,
-				limitwhitespace: true,
-				verbose: false,
-			}));
-
-			return { table };
+		if (type === TreeTypes.Expression) {
+			return { ...sharedProperties, examples, expressions } as unknown as R;
 		}
+
+		return { ...sharedProperties, examples, definitions, expressions } as unknown as R;
+	}
+
+	function getRelations($: CheerioAPI, row: Cheerio<Element>): Relations {
+		const section = row.children(Selectors.contentTabs.synthesis.body.row.relations.element);
+		const groups = section.children().toArray();
+
+		return groups.reduce<Relations>(
+			(relations, group) => {
+				if (!group.firstChild) return relations;
+
+				const typeElement = $(group).children().first().remove();
+				const typeString = typeElement.text().trim().toLowerCase().replace(':', '');
+
+				const type = relationTypeNameToRelationType[typeString];
+				if (!type) return relations;
+
+				const terms = $(group).children().toArray()
+					.map((node) => $(node).text())
+					.map((term) => term.trim())
+					.filter((term) => term.length !== 0);
+
+				relations[type!].push(...terms);
+
+				return relations;
+			},
+			{ synonyms: [], antonyms: [], diminutives: [], augmentatives: [] },
+		);
+	}
+
+	function getEtymology($: CheerioAPI, body: Cheerio<Element>): Array<Etymology> {
+		const section = body.children(Selectors.contentTabs.synthesis.body.etymology.element);
+
+		const entries = section.children(Selectors.contentTabs.synthesis.body.etymology.tree).children();
+		const rows = entries.children(Selectors.contentTabs.synthesis.body.row.element);
+
+		return rows.map((_index, row) => Row.parse($, $(row))).toArray();
 	}
 }
 
-export { Dexonline, DictionaryFlags, MatchingModes };
+namespace Inflection {
+	export interface InflectionTable extends Header, Body {}
+
+	interface Header {
+		tags: Array<string>;
+		index: number;
+		lemma: string;
+	}
+
+	interface Body {
+		table: Array<Array<string>>;
+	}
+
+	export function parse($: CheerioAPI, options: SearchOptionsWithWord): Array<InflectionTable> {
+		const inflection = $(Selectors.contentTab(ContentTabs.Inflection));
+
+		const entries = inflection.find(Selectors.contentTabs.inflection.entry.element).toArray();
+
+		return <Array<InflectionTable>> entries
+			.map<InflectionTable | undefined>((entryElement) => {
+				const tableElement = $(entryElement).children(Selectors.contentTabs.inflection.entry.table.element).first();
+
+				const header = parseHeader($, tableElement);
+				if (options.mode === MatchingModes.Strict && header.lemma !== options.word) {
+					return undefined;
+				}
+
+				const body = parseBody(tableElement);
+
+				return { ...header, ...body };
+			})
+			.filter((entryOrUndefined) => !!entryOrUndefined);
+	}
+
+	function parseHeader($: CheerioAPI, header: Cheerio<Element>): Header {
+		const section = header.children(Selectors.contentTabs.inflection.entry.table.header.element);
+
+		const lemmaString = section.children(Selectors.contentTabs.inflection.entry.table.header.lemma).html()!;
+		const [_match, lemma, _superscriptHtml, indexString] = Expressions.tableLemmaWithIndex.exec(lemmaString)!;
+		const index = indexString ? Number(indexString) - 1 : 0;
+
+		const tags = section.children(Selectors.contentTabs.inflection.entry.table.header.tag)
+			.children()
+			.map((_index, tag) => $(tag).text())
+			.toArray();
+
+		return { tags, lemma: lemma!, index };
+	}
+
+	function parseBody(body: Cheerio<Element>): Body {
+		const section = body.children(Selectors.contentTabs.inflection.entry.table.body.element);
+
+		// Certain words are listed in the inflection tab but do not show up with a table.
+		if (section.length === 0) {
+			return { table: [] };
+		}
+
+		const table = csv.parse(convertTableToCSV(section.html()!, {
+			tableSelector: 'tbody',
+			includeheaders: true,
+			limitwhitespace: true,
+			verbose: false,
+		}));
+
+		return { table };
+	}
+}
+
+export { Dexonline, DictionaryFlags, Inflection, MatchingModes, Synthesis };
 export type { ParserOptions };
