@@ -12,10 +12,7 @@ await emptyDir(outputDirectory);
 await build({
 	entryPoints: ['./mod.ts'],
 	outDir: outputDirectory,
-	shims: {
-		deno: true,
-		undici: true,
-	},
+	shims: { deno: true },
 	importMap: importsFile,
 	package: {
 		name: 'dexonline-parser',
