@@ -1,3 +1,16 @@
+## 3.2.0
+
+IMPROVEMENTS:
+
+- Remove `undici` shim from the Deno to Node conversion script.
+
+## 3.1.0
+
+IMPROVEMENTS:
+
+- Improve exports.
+- Un-nest namespaces.
+
 ## 3.0.0
 
 IMPROVEMENTS:
