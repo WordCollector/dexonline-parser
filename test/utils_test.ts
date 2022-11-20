@@ -1,4 +1,4 @@
-import { assertEquals } from 'std/testing/asserts.ts';
+import { assertEquals } from 'https://deno.land/std@0.163.0/testing/asserts.ts';
 import { zip } from '../src/mod.ts';
 
 Deno.test('zip', () => {

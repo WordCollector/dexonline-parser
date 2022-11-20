@@ -1,6 +1,6 @@
-import * as csv from 'std/encoding/csv.ts';
-import { default as convertTableToCSV } from 'table-to-csv';
-import { Cheerio, CheerioAPI, Element, load } from 'cheerio';
+import * as csv from 'https://deno.land/std@0.163.0/encoding/csv.ts';
+import { default as convertTableToCSV } from 'https://deno.land/x/table_to_csv@0.1.2/table_to_csv_headless.js';
+import { Cheerio, CheerioAPI, Element, load } from 'https://esm.sh/cheerio@1.0.0-rc.12';
 import {
 	ContentTabs,
 	DictionaryFlags,

@@ -1,4 +1,4 @@
-import { Cheerio, Element } from 'cheerio';
+import { Cheerio, Element } from 'https://esm.sh/cheerio@1.0.0-rc.12';
 
 /** Defines the available Dexonline content tabs. */
 enum ContentTabs {

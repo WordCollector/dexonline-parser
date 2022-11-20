@@ -1,7 +1,0 @@
-{
-	"imports": {
-		"std/": "https://deno.land/std@0.163.0/",
-		"cheerio": "https://esm.sh/cheerio@1.0.0-rc.12/",
-		"table-to-csv": "https://deno.land/x/table_to_csv@0.1.2/table_to_csv_headless.js"
-	}
-}

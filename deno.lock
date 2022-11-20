@@ -153,6 +153,7 @@
     "https://deno.land/x/ts_morph@15.1.0/common/ts_morph_common.js": "e43476019b9c74ca9116eb82b97a14e6bc2d1bba55b0575d933d98069c0c0c37",
     "https://deno.land/x/ts_morph@15.1.0/common/typescript.d.ts": "3fa86a2c33804b6a4221dda3714a6a2f8a2f26983ea6c63d2bf6f2839fbb778a",
     "https://deno.land/x/ts_morph@15.1.0/common/typescript.js": "4d7a5d2090a2ba739c02207bd8c49a60c9475dea7725a9cabfaf0f26cbf85f53",
+    "https://esm.sh/cheerio@1.0.0-rc.12": "39d12a2fbde4f617d90c1c954d481ab8cc7d6bec7b005d1acbbfd573f183135c",
     "https://esm.sh/cheerio@1.0.0-rc.12/": "39d12a2fbde4f617d90c1c954d481ab8cc7d6bec7b005d1acbbfd573f183135c",
     "https://esm.sh/linkedom@0.14.19/worker": "3f6f8480e4f89b6fbfc6c3cd7a6340d6cd19a4763dc29780759c43a6234ceeda",
     "https://esm.sh/linkedom@0.14.20/worker": "2eeeec8a4761f22ee718bed9aa18665916453b4d57d68f5fdfd6408b84d7178d",

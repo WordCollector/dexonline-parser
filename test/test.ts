@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals } from 'std/testing/asserts.ts';
+import { assertEquals, assertNotEquals } from 'https://deno.land/std@0.163.0/testing/asserts.ts';
 import { Dexonline, DictionaryFlags, MatchingModes } from '../mod.ts';
 import { Links } from '../src/mod.ts';
 

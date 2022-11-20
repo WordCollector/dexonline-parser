@@ -1,3 +1,16 @@
+## 3.2.2
+
+CHANGES:
+
+- Delete import map entirely due to issues arising from it being used within a standalone package such as
+  `dexonline-parser`.
+
+## 3.2.1
+
+IMPROVEMENTS:
+
+- Make import map relative.
+
 ## 3.2.0
 
 IMPROVEMENTS:

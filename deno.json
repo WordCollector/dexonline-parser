@@ -1,5 +1,4 @@
 {
-	"importMap": "./imports.json",
 	"compilerOptions": {
 		"allowJs": false,
 		"allowUnreachableCode": false,

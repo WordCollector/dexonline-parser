@@ -5,7 +5,6 @@ if (!Deno.args[0]) {
 }
 
 const outputDirectory = './npm';
-const importsFile = './imports.json';
 
 await emptyDir(outputDirectory);
 
@@ -13,7 +12,6 @@ await build({
 	entryPoints: ['./mod.ts'],
 	outDir: outputDirectory,
 	shims: { deno: true },
-	importMap: importsFile,
 	package: {
 		name: 'dexonline-parser',
 		version: Deno.args[0]!,
