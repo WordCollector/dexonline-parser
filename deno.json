@@ -1,5 +1,5 @@
 {
-	"importMap": "imports.json",
+	"importMap": "./imports.json",
 	"compilerOptions": {
 		"allowJs": false,
 		"allowUnreachableCode": false,
@@ -114,10 +114,10 @@
 				"use-isnan",
 				"valid-typeof"
 			],
-      "exclude": [
-        "no-namespace",
-        "no-empty-interface"
-      ]
+			"exclude": [
+				"no-namespace",
+				"no-empty-interface"
+			]
 		}
 	},
 	"fmt": {
