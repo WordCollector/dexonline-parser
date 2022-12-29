@@ -334,6 +334,7 @@ namespace Inflection {
 				}
 
 				const body = parseBody(tableElement);
+				if (body.table.length === 0) return undefined;
 
 				return { ...header, ...body };
 			})
