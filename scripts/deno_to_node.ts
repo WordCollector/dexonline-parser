@@ -12,6 +12,8 @@ await build({
 	entryPoints: ['./mod.ts'],
 	outDir: outputDirectory,
 	shims: { deno: true },
+	typeCheck: false,
+	declaration: false,
 	package: {
 		name: 'dexonline-parser',
 		version: Deno.args[0]!,
@@ -44,8 +46,10 @@ await build({
 		},
 	},
 	scriptModule: false,
-	compilerOptions: { lib: ['dom', 'es2022', 'es2021', 'es2020', 'es2019', 'es2018', 'es2017', 'es2016', 'es2015'] },
+	compilerOptions: { lib: ['es2022', 'es2021', 'es2020', 'es2019', 'es2018', 'es2017', 'es2016', 'es2015'] },
 });
 
 Deno.copyFile('LICENSE', `${outputDirectory}/LICENSE`);
 Deno.copyFile('README.md', `${outputDirectory}/README.md`);
+
+Deno.writeTextFile(`${outputDirectory}/.npmignore`, 'node_modules/\n', { append: true });
